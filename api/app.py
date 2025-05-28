@@ -22,7 +22,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_COOKIE_SAMESITE"] = None  #Allows cross-site cookies
 app.config["SESSION_COOKIE_SECURE"] = True  #Only over HTTPS
 app.secret_key = FLASK_SECRET_KEY
-CORS(app, supports_credentials=True, origins=[f"{APP_URL}"])
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"]) #Allows access from frontend
 
 #Function to lock backend route calls without key
 def require_api_key(f):
@@ -38,11 +38,22 @@ def require_api_key(f):
 def default_api():
     return jsonify({"message": "API is working!"})
 
-@app.route("/api/test_gemini", methods=["GET"])
-def test_gemini():
-    sample_prompt = "Summarize fairness in AI."
-    response = query_gemini(sample_prompt)
-    return jsonify({"response": response})
+@app.route("/api/ask", methods=["POST"])
+def ask_gemini():
+    try:
+        data = request.get_json()
+        prompt = data.get("prompt")
+
+        if not prompt:
+            return jsonify({"error": "Missing prompt"}), 400
+
+        response = query_gemini(prompt)
+
+        return jsonify({"response": response})
+
+    except Exception as e:
+        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     serve(app, host="0.0.0.0", port=5000, threads=6, debug=True, timeout=120)
