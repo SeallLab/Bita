@@ -3,7 +3,7 @@ from flask import Flask, jsonify, make_response, redirect, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
-
+from ieee import query_ieee
 from gemini import query_gemini
 
 #Get env variables
@@ -38,22 +38,20 @@ def require_api_key(f):
 def default_api():
     return jsonify({"message": "API is working!"})
 
-@app.route("/api/ask", methods=["POST"])
-def ask_gemini():
-    try:
-        data = request.get_json()
-        prompt = data.get("prompt")
+@app.route('/api/query-papers', methods=['POST'])
+def query_papers():
+    user_input = request.json.get("query")
+    papers = query_ieee(user_input)
 
-        if not prompt:
-            return jsonify({"error": "Missing prompt"}), 400
-
-        response = query_gemini(prompt)
-
-        return jsonify({"response": response})
-
-    except Exception as e:
-        return jsonify({"error": f"Internal server error: {str(e)}"}), 500
-
+    results = []
+    for paper in papers:
+        results.append({
+            "title": paper.get("title"),
+            "authors": paper.get("authors"),
+            "abstract": paper.get("abstract"),
+            "link": paper.get("pdf_url", paper.get("html_url"))
+        })
+    return jsonify(results)
 
 if __name__ == '__main__':
     serve(app, host="0.0.0.0", port=5000, threads=6, debug=True, timeout=120)

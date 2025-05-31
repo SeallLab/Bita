@@ -9,10 +9,10 @@ const GeminiChat = () => {
     if (!query) return;
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/ask', {
+      const res = await fetch('http://localhost:5000/api/query-papers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: query }),
+        body: JSON.stringify({ query: query }),
       });
       console.log(res)
       const data = await res.json();
@@ -27,7 +27,6 @@ const GeminiChat = () => {
 
   return (
     <div style={{ maxWidth: '600px', margin: '2rem auto', fontFamily: 'Arial' }}>
-      <h2>Ask Gemini a Question</h2>
       <textarea
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -40,7 +39,6 @@ const GeminiChat = () => {
       </button>
       {response && (
         <div style={{ marginTop: '20px', background: '#f2f2f2', padding: '15px' }}>
-          <strong style={{ color: '#000000' }}>Gemini says:</strong>
           <p style={{ color: '#000000' }}>{response}</p>
         </div>
       )}

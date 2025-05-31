@@ -1,23 +1,18 @@
-# Use official Python image
-FROM python:3.10
+FROM python:3.10-slim
 
-# Set the working directory
 WORKDIR /app
 
-# Copy dependencies
+RUN apt-get update && apt-get install -y build-essential libffi-dev
+
 COPY requirements.txt .
 
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-#Setup Supabase connection
-RUN pip install supabase
+ENV PYTHONUNBUFFERED=1
 
-# Copy the rest of the backend files
 COPY . .
 
-# Expose Flask’s default port
 EXPOSE 5000
 
-# Run Flask (adjust host & port as needed)
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+# Run Flask app
+CMD ["flask", "run", "debug=True", "--host=0.0.0.0", "--port=5000"]

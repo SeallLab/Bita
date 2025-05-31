@@ -8,6 +8,7 @@ services:
       - "5000:5000"
     volumes:
       - ./api:/usr/src/app/api
+      - ~/.cache/huggingface:/root/.cache/huggingface
     environment:
       FLASK_ENV: development
       DB_HOST: mysql
