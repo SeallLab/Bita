@@ -8,15 +8,17 @@ load_dotenv()
 def query_gemini(user_query: str, context_docs: list) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
-    prompt = f"""You are a helpful research assistant who interprets and synthesizes research findings.
+    prompt = f"""You are a helpful research assistant that is explaining topics focused on software fairness testing to someone who doesn't know much on the topic.
 
-Based on the following research summaries:
+Based on the following documents:
 
 {context}
 
-Please provide a thoughtful, high-level answer to the user's question below. Avoid directly quoting the documents. Instead, explain the main insights in your own words, and relate them to the user’s specific domain or problem.
-
-If the question involves testing or evaluating a system (e.g., an AI used for loans, hiring, etc.), suggest relevant fairness concerns (such as racial or gender bias), and propose one or two specific testing strategies the user could try (e.g., counterfactual testing, group comparison, fairness metric evaluation).
+Interpret the main insights and create a short exploratory testing charter tailored to the user's problem. 
+Keep the output concise (2–3 short paragraphs), and use plain text with simple line breaks between paragraphs.
+If the user mentions a specific fairness concern (like gender bias, racial disparity, or underrepresentation), focus the charter on that. 
+Include ideas for test inputs, comparison strategies, or ways to explore model behavior related to the issue.
+Keep the language simple, where it is easy to interpret and understand what is expected to test.
 
 User question:
 {user_query}

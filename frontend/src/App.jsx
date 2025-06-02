@@ -5,20 +5,19 @@ const BACKEND_URL = "http://localhost:5000";
 
 function App() {
   const [sessionId, setSessionId] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [inputHash, setInputHash] = useState("");
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  //On load, create session ID and fetch chat
+  //Only fetch chat once sessionId is confirmed
   useEffect(() => {
-    let storedId = localStorage.getItem("session_id");
-    if (!storedId) {
-      storedId = uuidv4();
-      localStorage.setItem("session_id", storedId);
+    if (confirmed && sessionId) {
+      localStorage.setItem("session_id", sessionId);
+      fetchChat(sessionId);
     }
-    setSessionId(storedId);
-    fetchChat(storedId);
-  }, []);
+  }, [confirmed, sessionId]);
 
   const fetchChat = async (id) => {
     try {
@@ -53,9 +52,47 @@ function App() {
     }
   };
 
+  //Prompt user for session hash
+  if (!confirmed) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h2>Enter or Create a Conversation Hash</h2>
+        <input
+          value={inputHash}
+          onChange={(e) => setInputHash(e.target.value)}
+          placeholder="Paste an existing session hash"
+          style={{ marginRight: 10, width: "60%" }}
+        />
+        <button
+          onClick={() => {
+            if (inputHash.trim()) {
+              setSessionId(inputHash.trim());
+              setConfirmed(true);
+            }
+          }}
+        >
+          Load Session
+        </button>
+        <span style={{ margin: "0 10px" }}>or</span>
+        <button
+          onClick={() => {
+            const newId = uuidv4();
+            setSessionId(newId);
+            setConfirmed(true);
+          }}
+        >
+          Start New Session
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: 20, fontFamily: "Arial" }}>
       <h2>AI Fairness Bot</h2>
+      <div style={{ fontSize: 14, marginBottom: 8, color: "#777" }}>
+        Session ID: <code>{sessionId}</code>
+      </div>
       <div style={{ border: "1px solid #ccc", padding: 10, minHeight: 300, marginBottom: 10 }}>
         {messages.map((m, i) => (
           <div key={i} style={{ margin: "8px 0" }}>
