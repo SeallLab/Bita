@@ -62,6 +62,10 @@ def get_messages(session_id):
     results = cursor.fetchall()
     cursor.close()
     conn.close()
+
+    if not results:
+        return "not_found"
+    
     return results
 
 #Message sent by user
@@ -131,6 +135,9 @@ def get_chat(session_id):
     history = get_messages(session_id)
     if history is None:
         return jsonify({"error": "Database connection failed"}), 500
+    
+    if history == "not_found":
+        return jsonify({"error": "Session ID not found"}), 404
 
     return jsonify([
         {

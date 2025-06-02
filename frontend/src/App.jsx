@@ -7,6 +7,7 @@ function App() {
   const [sessionId, setSessionId] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [inputHash, setInputHash] = useState("");
+  const [error, setError] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,10 +23,19 @@ function App() {
   const fetchChat = async (id) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/chat/${id}`);
+      if (!res.ok) {
+        const errorData = await res.json();
+        setError(errorData.error || "An unknown error occurred.");
+        setMessages([]);  //clear previous state
+        return;
+      }
+
       const data = await res.json();
       setMessages(data);
+      setError(null);  //clear error if success
     } catch (err) {
       console.error("Failed to fetch chat history:", err);
+      setError("Unable to connect to the server.");
     }
   };
 
@@ -52,37 +62,58 @@ function App() {
     }
   };
 
+  const tryLoadSession = async () => {
+    const hash = inputHash.trim();
+    if (!hash) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/chat/${hash}`);
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error || "Invalid session.");
+        return;
+      }
+
+      const data = await res.json();
+      setSessionId(hash);
+      setMessages(data);
+      setConfirmed(true); //Only now allow user into the chat
+      setError(null);
+    } catch (err) {
+      setError("Failed to connect to the server.");
+    }
+  };
+
   //Prompt user for session hash
   if (!confirmed) {
     return (
       <div style={{ padding: 20 }}>
         <h2>Enter or Create a Conversation Hash</h2>
+
         <input
           value={inputHash}
-          onChange={(e) => setInputHash(e.target.value)}
+          onChange={(e) => {
+            setInputHash(e.target.value);
+            setError(null);
+          }}
           placeholder="Paste an existing session hash"
           style={{ marginRight: 10, width: "60%" }}
         />
-        <button
-          onClick={() => {
-            if (inputHash.trim()) {
-              setSessionId(inputHash.trim());
-              setConfirmed(true);
-            }
-          }}
-        >
-          Load Session
-        </button>
+        <button onClick={tryLoadSession}>Load Session</button>
+
         <span style={{ margin: "0 10px" }}>or</span>
         <button
           onClick={() => {
             const newId = uuidv4();
             setSessionId(newId);
             setConfirmed(true);
+            setError(null);
           }}
         >
           Start New Session
         </button>
+
+        {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
       </div>
     );
   }
@@ -94,11 +125,13 @@ function App() {
         Session ID: <code>{sessionId}</code>
       </div>
       <div style={{ border: "1px solid #ccc", padding: 10, minHeight: 300, marginBottom: 10 }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ margin: "8px 0" }}>
-            <strong>{m.sender === "user" ? "You" : "Bot"}:</strong> {m.message}
-          </div>
-        ))}
+        {(
+          messages.map((m, i) => (
+            <div key={i} style={{ margin: "8px 0" }}>
+              <strong>{m.sender === "user" ? "You" : "Bot"}:</strong> {m.message}
+            </div>
+          ))
+        )}
         {loading && <div><em>Bot is thinking...</em></div>}
       </div>
       <input
