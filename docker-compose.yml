@@ -9,6 +9,7 @@ services:
     volumes:
       - ./api:/usr/src/app/api
       - ~/.cache/huggingface:/root/.cache/huggingface
+      - ./vector_store:/app/vector_store
     environment:
       FLASK_ENV: development
       DB_HOST: mysql

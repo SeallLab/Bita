@@ -1,13 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 import os
-import sqlite3
 from flask import Flask, jsonify, make_response, redirect, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
 from database_connector import get_db_connection
-from ieee import query_ieee
+from source_fetching import query_papers
 from gemini import query_gemini
 
 #Get env variables
@@ -46,12 +45,14 @@ class Document:
 def default_api():
     return jsonify({"message": "API is working!"})
 
+#Saves message into database for chat retrieval
 def store_message(conn, cursor, session_id, sender, message, timestamp):
     cursor.execute(
         "INSERT INTO messages (session_id, sender, message, timestamp) VALUES (%s, %s, %s, %s)",
         (session_id, sender, message, timestamp)
     )
 
+#Fetches message history based on session ID
 def get_messages(session_id):
     conn = get_db_connection()
     if conn is None:
@@ -85,38 +86,7 @@ def chat():
     store_message(conn, cursor, session_id, "user", user_message, datetime.utcnow())
 
     #Fetch Gemini answer from IEEE context
-    #context_docs = query_ieee(user_message)
-    context_docs = [
-        Document(page_content="""
-        Title: Fairness in Machine Learning Systems
-        Authors: A. Smith, B. Lee
-        Abstract: This paper explores the definition and operationalization of fairness in machine learning systems. It compares group fairness metrics such as demographic parity and equalized odds, and evaluates their trade-offs using a credit lending dataset.
-        """),
-
-            Document(page_content="""
-        Title: Bias Mitigation Techniques in AI
-        Authors: C. Kumar, D. Zhang
-        Abstract: We review algorithmic strategies to reduce bias in classification models, including re-weighting, adversarial debiasing, and fairness constraints during training. Our experiments on facial recognition systems show significant reductions in disparate impact.
-        """),
-
-            Document(page_content="""
-        Title: The Impact of Dataset Imbalance on Fairness
-        Authors: E. Chen, F. Miller
-        Abstract: Dataset imbalance can cause predictive models to underperform on minority groups. This study quantifies the impact of class imbalance on fairness metrics and recommends stratified sampling and synthetic data generation to mitigate the effects.
-        """),
-
-            Document(page_content="""
-        Title: Individual vs. Group Fairness in Decision Systems
-        Authors: G. Wu, H. Patel
-        Abstract: The paper compares the philosophical underpinnings and practical implications of individual fairness versus group fairness. It proposes a hybrid framework to balance fairness objectives across competing ethical perspectives.
-        """),
-
-            Document(page_content="""
-        Title: Auditing Black-Box Models for Discrimination
-        Authors: I. Rahman, J. O'Brien
-        Abstract: This work introduces an auditing tool that can evaluate black-box ML models for signs of discrimination. Using counterfactual examples and sensitivity analysis, we expose hidden biases in recidivism prediction systems.
-        """)
-        ]
+    context_docs = query_papers(user_message)
     bot_reply = query_gemini(user_message, context_docs)
 
     #Save bot reply
