@@ -69,6 +69,25 @@ def get_messages(session_id):
     
     return results
 
+def get_conversation_context(session_hash, limit=6):
+    conn = get_db_connection()
+    if conn is None:
+        return None
+    
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT sender, message
+        FROM messages
+        WHERE session_id = %s
+        ORDER BY timestamp DESC
+        LIMIT %s
+    """, (session_hash, limit))
+
+    messages = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return "\n".join(f"{role.capitalize()}: {msg}" for role, msg in reversed(messages))
+
 #Message sent by user
 @app.route("/api/chat", methods=["POST"])
 def chat():
@@ -85,9 +104,10 @@ def chat():
     #Save user message
     store_message(conn, cursor, session_id, "user", user_message, datetime.utcnow())
 
-    #Fetch Gemini answer from IEEE context
+    #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
-    bot_reply = query_gemini(user_message, context_docs)
+    previous_chats = get_conversation_context(session_id)
+    bot_reply = query_gemini(user_message, context_docs, previous_chats)
 
     #Save bot reply
     store_message(conn, cursor, session_id, "bot", bot_reply, datetime.utcnow())

@@ -5,13 +5,15 @@ from dotenv import load_dotenv
 #Load from .env
 load_dotenv()
 
-def query_gemini(user_query: str, context_docs: list) -> str:
+def query_gemini(user_query: str, context_docs: list, chat_logs: str) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
     prompt = f"""You are a helpful, enthusiastic research assistant who explains fairness testing in simple, practical terms while being kind and supportive.
 
-    Based on the following documents:
+    Here is the previous conversation:
+    {chat_logs}
 
+    Based on the following documents:
     {context}
 
     Interpret the main insights and generate a short exploratory testing charter tailored to the user's concern.
@@ -41,4 +43,3 @@ def query_gemini(user_query: str, context_docs: list) -> str:
     model = genai.GenerativeModel("gemini-1.5-flash-latest")
     response = model.generate_content(prompt)
     return response.text
-
