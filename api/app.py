@@ -86,7 +86,7 @@ def get_conversation_context(session_hash, limit=6):
     messages = cursor.fetchall()
     cursor.close()
     conn.close()
-    return "\n".join(f"{role.capitalize()}: {msg}" for role, msg in reversed(messages))
+    return "\n".join(f"{msg['sender'].capitalize()}: {msg['message']}" for msg in reversed(messages))
 
 #Message sent by user
 @app.route("/api/chat", methods=["POST"])
