@@ -14,6 +14,22 @@ def clean_text(text):
     text = re.sub(r"\s+", " ", text)  #Normalize whitespace
     return text.strip()
 
+#Chunk the sources for passing for embedding
+def get_chunks_for_embedding(pdf_folder="papers", chunk_size=1500, chunk_overlap=150):
+    docs = []
+    for filename in os.listdir(pdf_folder):
+        if filename.endswith(".pdf"):
+            loader = UnstructuredPDFLoader(os.path.join(pdf_folder, filename), strategy="fast")
+            docs.extend(loader.load())
+
+    splitter = SpacyTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    chunks = splitter.split_documents(docs)
+
+    cleaned_chunks = [clean_text(chunk.page_content) for chunk in chunks]
+    metadata = [chunk.metadata for chunk in chunks]
+
+    return cleaned_chunks, metadata
+
 #Create index from sources, ran once to create index
 def build_local_index(pdf_folder="papers", index_path="vector_store"):
     model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -66,8 +82,12 @@ def query_papers(query, index_path="vector_store", top_k=5):
     return results
 
 if __name__ == "__main__":
+    chunks, metadata = get_chunks_for_embedding(pdf_folder="papers")
+    for i, chunk in enumerate(chunks[:5]):
+        print(f"Chunk {i+1}:\n{chunk[:300]}...\n")
+
     build_local_index(pdf_folder="papers")
 
     results = query_papers("How should I test my loan approval system?")
     for i, res in enumerate(results):
-        print(f"\nResult {i+1}:\n{res['content'][:500]}...\n")
+        print(f"\nResult {i+1}:\n{res.page_content[:500]}...\n")
