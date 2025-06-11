@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: fairness-api
+    env: docker
+    plan: free
+    repo: https://github.com/keeryn04/Fairness-Chatbot
+    dockerfilePath: ./api/Dockerfile
+    buildFilter:
+      paths:
+        - api/**
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DB_HOST
+      - key: DB_USER
+      - key: DB_PASSWORD
+      - key: DB_NAME
+
+  - type: web
+    name: fairness-ui
+    env: static
+    plan: free
+    repo: https://github.com/keeryn04/Fairness-Chatbot
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    buildFilter:
+      paths:
+        - frontend/**
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: https://fairness-api.onrender.com
