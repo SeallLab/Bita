@@ -49,25 +49,24 @@ def default_api():
 
 #Saves message into database for chat retrieval
 def store_message(session_id, sender, message, timestamp):
-    supabase = get_db_connection()
-    response = supabase.table("messages").insert({
-        "session_id": session_id,
-        "sender": sender,
-        "message": message,
-        "timestamp": timestamp.isoformat()
-    }).execute()
-
-    if response.error:
-        print("Failed to store message:", response.error)
-        return None
+    try:
+        supabase = get_db_connection()
+        supabase.table("messages").insert({
+            "session_id": session_id,
+            "sender": sender,
+            "message": message,
+            "timestamp": timestamp.isoformat()
+        }).execute()
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
 #Fetches message history based on session ID
 def get_messages(session_id):
-    supabase = get_db_connection()
-    response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
-    if response.error:
-        print("Failed to fetch messages:", response.error)
-        return None
+    try:
+        supabase = get_db_connection()
+        response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
     messages = response.data
     if not messages:
@@ -76,20 +75,19 @@ def get_messages(session_id):
     return messages
 
 def get_conversation_context(session_hash, limit=6):
-    supabase = get_db_connection()
-    response = (
-        supabase
-        .table("messages")
-        .select("sender, message")
-        .eq("session_id", session_hash)
-        .order("timestamp", desc=True)
-        .limit(limit)
-        .execute()
-    )
-
-    if response.error:
-        print("Failed to fetch conversation history:", response.error)
-        return ""
+    try:
+        supabase = get_db_connection()
+        response = (
+            supabase
+            .table("messages")
+            .select("sender, message")
+            .eq("session_id", session_hash)
+            .order("timestamp", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
     messages = list(reversed(response.data))
     return "\n".join(f"{m['sender'].capitalize()}: {m['message']}" for m in messages)
