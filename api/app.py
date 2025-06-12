@@ -106,7 +106,7 @@ def chat():
     cursor = conn.cursor(dictionary=True)
 
     #Save user message
-    store_message(conn, cursor, session_id, "user", user_message, datetime.utcnow())
+    store_message(session_id, "user", user_message, datetime.utcnow())
 
     #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
@@ -114,7 +114,7 @@ def chat():
     bot_reply = query_gemini(user_message, context_docs, previous_chats)
 
     #Save bot reply
-    store_message(conn, cursor, session_id, "bot", bot_reply, datetime.utcnow())
+    store_message(session_id, "bot", bot_reply, datetime.utcnow())
 
     conn.commit()
     cursor.close()
