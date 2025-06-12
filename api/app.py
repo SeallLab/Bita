@@ -57,14 +57,16 @@ def store_message(session_id, sender, message, timestamp):
         "timestamp": timestamp.isoformat()
     }).execute()
 
-    if response.status_code != 201:
-        print("Failed to store message:", response.json())
+    if response.error:
+        print("Failed to store message:", response.error)
+        return None
 
 #Fetches message history based on session ID
 def get_messages(session_id):
     supabase = get_db_connection()
     response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
-    if response.status_code != 200:
+    if response.error:
+        print("Failed to fetch messages:", response.error)
         return None
 
     messages = response.data
@@ -85,7 +87,8 @@ def get_conversation_context(session_hash, limit=6):
         .execute()
     )
 
-    if response.status_code != 200 or not response.data:
+    if response.error:
+        print("Failed to fetch conversation history:", response.error)
         return ""
 
     messages = list(reversed(response.data))
