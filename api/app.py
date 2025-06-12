@@ -49,6 +49,7 @@ def default_api():
 
 #Saves message into database for chat retrieval
 def store_message(session_id, sender, message, timestamp):
+    supabase = get_db_connection()
     response = supabase.table("messages").insert({
         "session_id": session_id,
         "sender": sender,
@@ -61,6 +62,7 @@ def store_message(session_id, sender, message, timestamp):
 
 #Fetches message history based on session ID
 def get_messages(session_id):
+    supabase = get_db_connection()
     response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
     if response.status_code != 200:
         return None
@@ -72,6 +74,7 @@ def get_messages(session_id):
     return messages
 
 def get_conversation_context(session_hash, limit=6):
+    supabase = get_db_connection()
     response = (
         supabase
         .table("messages")
