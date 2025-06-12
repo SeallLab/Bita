@@ -1,10 +1,8 @@
 flask
 flask-cors
-mysql-connector-python
 requests
 python-dotenv
 flask-session
-supabase
 pyjwt
 datetime
 waitress
@@ -17,3 +15,4 @@ sentence-transformers>=2.2.2
 unstructured
 spacy
 pdfminer.six
+psycopg2-binary
