@@ -4,6 +4,7 @@ import os
 from flask import Flask, jsonify, make_response, redirect, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
+import supabase
 from waitress import serve
 from database_connector import get_db_connection
 from source_fetching import query_papers
@@ -16,16 +17,17 @@ load_dotenv()
 app = Flask(__name__)
 
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
-APP_URL = os.getenv('APP_URL')
+APP_URL = os.getenv('FRONTEND_APP_URL')
 API_ACCESS_KEY = os.getenv('API_ACCESS_KEY')
 API_KEY=os.getenv("GOOGLE_API_KEY")
+
 
 #Configure Flask session for HTTPS hosting
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_COOKIE_SAMESITE"] = None  #Allows cross-site cookies
 app.config["SESSION_COOKIE_SECURE"] = True  #Only over HTTPS
 app.secret_key = FLASK_SECRET_KEY
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"]) #Allows access from frontend
+CORS(app, supports_credentials=True, origins=[APP_URL]) #Allows access from frontend
 
 #Function to lock backend route calls without key
 def require_api_key(f):
@@ -46,47 +48,45 @@ def default_api():
     return jsonify({"message": "API is working!"})
 
 #Saves message into database for chat retrieval
-def store_message(conn, cursor, session_id, sender, message, timestamp):
-    cursor.execute(
-        "INSERT INTO messages (session_id, sender, message, timestamp) VALUES (%s, %s, %s, %s)",
-        (session_id, sender, message, timestamp)
-    )
+def store_message(session_id, sender, message, timestamp):
+    response = supabase.table("messages").insert({
+        "session_id": session_id,
+        "sender": sender,
+        "message": message,
+        "timestamp": timestamp.isoformat()
+    }).execute()
+
+    if response.status_code != 201:
+        print("Failed to store message:", response.json())
 
 #Fetches message history based on session ID
 def get_messages(session_id):
-    conn = get_db_connection()
-    if conn is None:
+    response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
+    if response.status_code != 200:
         return None
 
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT sender, message, timestamp FROM messages WHERE session_id = %s", (session_id,))
-    results = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    if not results:
+    messages = response.data
+    if not messages:
         return "not_found"
-    
-    return results
+
+    return messages
 
 def get_conversation_context(session_hash, limit=6):
-    conn = get_db_connection()
-    if conn is None:
-        return None
-    
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT sender, message
-        FROM messages
-        WHERE session_id = %s
-        ORDER BY timestamp DESC
-        LIMIT %s
-    """, (session_hash, limit))
+    response = (
+        supabase
+        .table("messages")
+        .select("sender, message")
+        .eq("session_id", session_hash)
+        .order("timestamp", desc=True)
+        .limit(limit)
+        .execute()
+    )
 
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return "\n".join(f"{msg['sender'].capitalize()}: {msg['message']}" for msg in reversed(messages))
+    if response.status_code != 200 or not response.data:
+        return ""
+
+    messages = list(reversed(response.data))
+    return "\n".join(f"{m['sender'].capitalize()}: {m['message']}" for m in messages)
 
 #Message sent by user
 @app.route("/api/chat", methods=["POST"])
@@ -125,7 +125,7 @@ def get_chat(session_id):
     history = get_messages(session_id)
     if history is None:
         return jsonify({"error": "Database connection failed"}), 500
-    
+
     if history == "not_found":
         return jsonify({"error": "Session ID not found"}), 404
 
@@ -133,7 +133,7 @@ def get_chat(session_id):
         {
             "sender": row["sender"],
             "message": row["message"],
-            "timestamp": row["timestamp"].isoformat() if hasattr(row["timestamp"], "isoformat") else str(row["timestamp"])
+            "timestamp": row["timestamp"]
         }
         for row in history
     ])
