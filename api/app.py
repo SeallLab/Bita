@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 import os
+import uuid
 from flask import Flask, jsonify, make_response, redirect, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -50,9 +51,11 @@ def default_api():
 #Saves message into database for chat retrieval
 def store_message(session_id, sender, message, timestamp):
     try:
+        session_uuid = str(uuid.UUID(session_id))
+        
         supabase = get_db_connection()
         supabase.table("messages").insert({
-            "session_id": session_id,
+            "session_id": session_uuid,
             "sender": sender,
             "message": message,
             "timestamp": timestamp.isoformat()
@@ -99,14 +102,11 @@ def chat():
     session_id = data["session_id"]
     user_message = data["message"]
 
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    cursor = conn.cursor(dictionary=True)
+    #Check session ID is valid format
+    session_uuid = str(uuid.UUID(session_id))
 
     #Save user message
-    store_message(conn, cursor, session_id, "user", user_message, datetime.utcnow())
+    store_message(session_uuid, "user", user_message, datetime.utcnow())
 
     #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
@@ -114,11 +114,7 @@ def chat():
     bot_reply = query_gemini(user_message, context_docs, previous_chats)
 
     #Save bot reply
-    store_message(conn, cursor, session_id, "bot", bot_reply, datetime.utcnow())
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    store_message(session_uuid, "bot", bot_reply, datetime.utcnow())
 
     #Return reply for frontend display
     return jsonify({"reply": bot_reply})
