@@ -28,7 +28,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_COOKIE_SAMESITE"] = None  #Allows cross-site cookies
 app.config["SESSION_COOKIE_SECURE"] = True  #Only over HTTPS
 app.secret_key = FLASK_SECRET_KEY
-CORS(app, supports_credentials=True, origins=[APP_URL]) #Allows access from frontend
+CORS(app, origins=[APP_URL]) #Allows access from frontend
 
 #Function to lock backend route calls without key
 def require_api_key(f):
