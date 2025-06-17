@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-const BACKEND_URL = process.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function App() {
   const [sessionId, setSessionId] = useState("");
