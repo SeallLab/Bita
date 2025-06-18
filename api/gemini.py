@@ -5,6 +5,14 @@ from dotenv import load_dotenv
 #Load from .env
 load_dotenv()
 
+_gemini_client = None
+
+def get_gemini_client():
+    global _gemini_client
+    if _gemini_client is None:
+        _gemini_client = genai.GenerativeModel("gemini-1.5-flash-latest")  #Load model once
+    return _gemini_client
+
 def query_gemini(user_query: str, context_docs: list, chat_logs: str) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
@@ -40,6 +48,6 @@ def query_gemini(user_query: str, context_docs: list, chat_logs: str) -> str:
     {user_query}
     """
 
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    model = get_gemini_client()
     response = model.generate_content(prompt)
     return response.text

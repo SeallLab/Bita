@@ -7,6 +7,25 @@ from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import SpacyTextSplitter
 from langchain.schema import Document
 
+_model = None
+_index = None
+_index_texts = None
+_index_metadata = None
+
+def get_model():
+    global _model
+    if _model is None:
+        _model = SentenceTransformer("all-MiniLM-L6-v2")
+    return _model
+
+def get_index(index_path="vector_store"):
+    global _index, _index_texts, _index_metadata
+    if _index is None:
+        _index = faiss.read_index(os.path.join(index_path, "faiss.index"))
+        with open(os.path.join(index_path, "metadata.pkl"), "rb") as f:
+            _index_texts, _index_metadata = pickle.load(f)
+    return _index, _index_texts, _index_metadata
+
 #Remove extra research paper things
 def clean_text(text):
     text = re.sub(r"Authorized licensed use.*?Restrictions apply\.", "", text, flags=re.DOTALL)
@@ -66,11 +85,8 @@ def build_local_index(pdf_folder="papers", index_path="vector_store"):
 
 #Called to get source summaries for Gemini
 def query_papers(query, index_path="vector_store", top_k=5):
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-
-    index = faiss.read_index(os.path.join(index_path, "faiss.index"))
-    with open(os.path.join(index_path, "metadata.pkl"), "rb") as f:
-        texts, metadata = pickle.load(f)
+    model = get_model()
+    index, texts, metadata = get_index(index_path)
 
     query_embedding = model.encode([query])
     distances, indices = index.search(query_embedding, top_k)
