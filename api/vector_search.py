@@ -74,7 +74,6 @@ def build_supabase_index(pdf_folder="papers"):
     texts, metadata = get_chunks_for_embedding(pdf_folder)
     upload_chunks_to_supabase(texts, metadata)
 
-#
 def supabase_rpc_match_paper_chunks(query_embedding, top_k=5):
     response = supabase.rpc(
         "match_paper_chunks",
