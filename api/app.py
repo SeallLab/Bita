@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import supabase
 from waitress import serve
 from database_connector import get_db_connection
-from source_fetching import query_papers
+from vector_search import query_papers
 from gemini import query_gemini
 
 #Get env variables
@@ -21,7 +21,6 @@ FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
 APP_URL = os.getenv('FRONTEND_APP_URL')
 API_ACCESS_KEY = os.getenv('API_ACCESS_KEY')
 API_KEY=os.getenv("GOOGLE_API_KEY")
-
 
 #Configure Flask session for HTTPS hosting
 app.config["SESSION_TYPE"] = "filesystem"
