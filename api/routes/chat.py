@@ -89,7 +89,8 @@ def get_chat(session_id):
         return jsonify({"error": "Database connection failed"}), 500
     
     if history == "not_found":
-        return jsonify([])
+        return jsonify({"error": "Session not found"}), 404
+
 
     return jsonify([
         {
