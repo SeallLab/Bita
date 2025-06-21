@@ -1,13 +1,9 @@
-from dataclasses import dataclass
-from datetime import datetime
 import os
-from flask import Flask, jsonify, make_response, redirect, request, session
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
-from llm_query import send_query
-from database_connector import get_db_connection
-from source_fetching import query_papers
+from routes.chat import chatting
 
 #Get env variables
 load_dotenv()
@@ -35,107 +31,13 @@ def require_api_key(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@dataclass
-class Document:
-    page_content: str
+#Add routes for chatting
+app.register_blueprint(chatting)
 
 #Default path
 @app.route("/", methods=["GET"])
 def default_api():
     return jsonify({"message": "API is working!"})
-
-#Saves message into database for chat retrieval
-def store_message(conn, cursor, session_id, sender, message, timestamp):
-    cursor.execute(
-        "INSERT INTO messages (session_id, sender, message, timestamp) VALUES (%s, %s, %s, %s)",
-        (session_id, sender, message, timestamp)
-    )
-
-#Fetches message history based on session ID
-def get_messages(session_id):
-    conn = get_db_connection()
-    if conn is None:
-        return None
-
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT sender, message, timestamp FROM messages WHERE session_id = %s", (session_id,))
-    results = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    if not results:
-        return "not_found"
-    
-    return results
-
-def get_conversation_context(session_hash, limit=6):
-    conn = get_db_connection()
-    if conn is None:
-        return None
-    
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT sender, message
-        FROM messages
-        WHERE session_id = %s
-        ORDER BY timestamp DESC
-        LIMIT %s
-    """, (session_hash, limit))
-
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return "\n".join(f"{msg['sender'].capitalize()}: {msg['message']}" for msg in reversed(messages))
-
-#Message sent by user
-@app.route("/api/chat", methods=["POST"])
-def chat():
-    data = request.json
-    session_id = data["session_id"]
-    user_message = data["message"]
-
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    cursor = conn.cursor(dictionary=True)
-
-    #Save user message
-    store_message(conn, cursor, session_id, "user", user_message, datetime.utcnow())
-
-    #Fetch Gemini answer from IEEE context and previous chat entries
-    context_docs = query_papers(user_message)
-    previous_chats = get_conversation_context(session_id)
-    bot_reply = send_query(user_message, context_docs, previous_chats)
-
-    #Save bot reply
-    store_message(conn, cursor, session_id, "bot", bot_reply, datetime.utcnow())
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    #Return reply for frontend display
-    return jsonify({"reply": bot_reply})
-
-#Restoring chat based on session_id
-@app.route("/api/chat/<session_id>", methods=["GET"])
-def get_chat(session_id):
-    history = get_messages(session_id)
-    if history is None:
-        return jsonify({"error": "Database connection failed"}), 500
-    
-    if history == "not_found":
-        return jsonify({"error": "Session ID not found"}), 404
-
-    return jsonify([
-        {
-            "sender": row["sender"],
-            "message": row["message"],
-            "timestamp": row["timestamp"].isoformat() if hasattr(row["timestamp"], "isoformat") else str(row["timestamp"])
-        }
-        for row in history
-    ])
 
 if __name__ == '__main__':
     serve(app, host="0.0.0.0", port=5000, threads=6, debug=True, timeout=120)

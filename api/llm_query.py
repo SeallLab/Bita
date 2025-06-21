@@ -10,7 +10,7 @@ GPT_API_KEY=os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=GPT_API_KEY)
 
-def send_query(user_query: str, context_docs: list, chat_logs: str) -> str:
+def send_query(user_query: str, context_docs: list, chat_logs: str, llm_type: str) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
     prompt = f"""You are a helpful, enthusiastic research assistant who explains fairness testing in simple, practical terms while being kind and supportive.
@@ -22,13 +22,13 @@ def send_query(user_query: str, context_docs: list, chat_logs: str) -> str:
     {context}
 
     Interpret the main insights and generate a short exploratory testing charter tailored to the user's concern.
-    Keep the output concise (1-2 short paragraphs). Avoid technical jargon, greeting the user, and formatting like bold text.
-    Don't mention the sources directly, but use them to confirm your knowledge and guarantee you are giving the correct answer.
+    Keep the output concise (1-2 short paragraphs). Avoid technical jargon, greeting the user unless they greet you, and formatting like bold text.
+    Don't mention the sources directly, but use them to confirm your knowledge.
 
-    If the user mentions a fairness concern (e.g. gender bias, racial disparity, or underrepresentation), focus the charter on that topic.
-    Include a clear goal and simple test strategies the user can try, such as input variations, comparison checks, or observation techniques.
+    If the user mentions a fairness concern (e.g. gender bias, underrepresentation), focus on that topic.
+    Include a clear goal and simple test strategies the user can try, such as input variations, or observation techniques.
 
-    Only include examples if the user specifically asks for them. If they do, return 2–3 test ideas in plain text and those only, written like this:
+    Only include examples if the user asks for them. If they do, return 2–3 test ideas in plain text and those only, written like this:
 
     1) Test a case where the applicant is _ versus where the applicant is _, where you should expect the outcome to be _.
 
@@ -45,6 +45,11 @@ def send_query(user_query: str, context_docs: list, chat_logs: str) -> str:
     {user_query}
     """
 
+    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    response = model.generate_content(prompt)
+    return response.text
+
+    '''
     try:
         #Query GPT first
         response = client.chat.completions.create(
@@ -64,3 +69,4 @@ def send_query(user_query: str, context_docs: list, chat_logs: str) -> str:
         model = genai.GenerativeModel("gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
         return response.text
+    '''
