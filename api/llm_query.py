@@ -1,11 +1,16 @@
 import os
+from openai import OpenAI
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-#Load from .env
 load_dotenv()
 
-def query_gemini(user_query: str, context_docs: list, chat_logs: str) -> str:
+GPT_API_KEY=os.getenv("OPENAI_API_KEY")
+
+
+client = OpenAI(api_key=GPT_API_KEY)
+
+def send_query(user_query: str, context_docs: list, chat_logs: str) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
     prompt = f"""You are a helpful, enthusiastic research assistant who explains fairness testing in simple, practical terms while being kind and supportive.
@@ -40,6 +45,22 @@ def query_gemini(user_query: str, context_docs: list, chat_logs: str) -> str:
     {user_query}
     """
 
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-    response = model.generate_content(prompt)
-    return response.text
+    try:
+        #Query GPT first
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant specialized in fairness testing."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        reply = response.choices[0].message.content
+
+        return reply
+    
+    except Exception as e:
+        #Fallback to Gemini
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        response = model.generate_content(prompt)
+        return response.text

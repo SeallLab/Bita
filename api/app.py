@@ -5,9 +5,9 @@ from flask import Flask, jsonify, make_response, redirect, request, session
 from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
+from llm_query import send_query
 from database_connector import get_db_connection
 from source_fetching import query_papers
-from gemini import query_gemini
 
 #Get env variables
 load_dotenv()
@@ -18,7 +18,6 @@ app = Flask(__name__)
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
 APP_URL = os.getenv('APP_URL')
 API_ACCESS_KEY = os.getenv('API_ACCESS_KEY')
-API_KEY=os.getenv("GOOGLE_API_KEY")
 
 #Configure Flask session for HTTPS hosting
 app.config["SESSION_TYPE"] = "filesystem"
@@ -107,7 +106,7 @@ def chat():
     #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
     previous_chats = get_conversation_context(session_id)
-    bot_reply = query_gemini(user_message, context_docs, previous_chats)
+    bot_reply = send_query(user_message, context_docs, previous_chats)
 
     #Save bot reply
     store_message(conn, cursor, session_id, "bot", bot_reply, datetime.utcnow())
