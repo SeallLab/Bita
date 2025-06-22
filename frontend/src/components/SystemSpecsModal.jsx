@@ -1,4 +1,4 @@
-export default function SystemSpecsModal({ isOpen, onClose, systemSpecs, setSystemSpecs }) {
+export default function SystemSpecsModal({ isOpen, onClose, systemSpecs, setSystemSpecs, saveSystemSpecs}) {
   if (!isOpen) return null;
 
   return (
@@ -70,7 +70,10 @@ export default function SystemSpecsModal({ isOpen, onClose, systemSpecs, setSyst
           </div>
 
           <button
-            onClick={onClose}
+            onClick={() => {
+              saveSystemSpecs(systemSpecs);
+              onClose();
+            }}
             style={{
               backgroundColor: "#2c3e50",
               color: "#a0c4ff",

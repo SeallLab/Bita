@@ -33,11 +33,13 @@ function App() {
         const errorData = await res.json();
         setError(errorData.error || "An unknown error occurred.");
         setMessages([]);
+        setSystemSpecs("");
         return;
       }
 
       const data = await res.json();
-      setMessages(data);
+      setMessages(data.messages);
+      setSystemSpecs(data.system_details);
       setError(null);
     } catch (err) {
       setError("Unable to connect to the server.");
@@ -81,11 +83,31 @@ function App() {
 
       const data = await res.json();
       setSessionId(hash);
-      setMessages(data);
+      setMessages(data.messages);
+      setSystemSpecs(data.system_details);
       setConfirmed(true);
       setError(null);
     } catch (err) {
       setError("Failed to connect to the server.");
+    }
+  };
+
+  const saveSystemSpecs = async (specs) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/system_details`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          system_details: specs,
+        })
+      });
+
+      if (!res.ok) {
+        console.error("Failed to save system details");
+      }
+    } catch (err) {
+      console.error("Error saving system details:", err);
     }
   };
 
@@ -131,7 +153,14 @@ function App() {
                   {m.sender === "user" ? "You" : "Nomi"}:
                 </strong>{" "}
                 <div className="message-text">
-                  <ReactMarkdown>{m.message}</ReactMarkdown>
+                  <ReactMarkdown
+                    components={{
+                      p: ({node, ...props}) => <span {...props} />,  //replace <p> with <span> for no spacing
+                      br: () => <br style={{ marginBottom: '0.2em' }} />, //reduce <br> spacing
+                    }}
+                  >
+                    {m.message}
+                  </ReactMarkdown>
                 </div>
               </div>
             ))}
@@ -139,7 +168,12 @@ function App() {
           </div>
 
           <div className="suggestion-bubbles">
-            <SuggestionTabs systemSpecs={systemSpecs} sessionId={sessionId} updateMessages={setMessages} loadingStatus={setLoading} />
+            <SuggestionTabs 
+              systemSpecs={systemSpecs} 
+              sessionId={sessionId} 
+              updateMessages={setMessages} 
+              loadingStatus={setLoading} 
+            />
           </div>
 
           <div className="input-row">
@@ -164,6 +198,7 @@ function App() {
           onClose={() => setShowSpecs(false)}
           systemSpecs={systemSpecs}
           setSystemSpecs={setSystemSpecs}
+          saveSystemSpecs={saveSystemSpecs}
         />
       </div>
     </div>

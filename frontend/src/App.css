@@ -124,6 +124,12 @@ h2 {
   font-style: italic;
 }
 
+.message-text span {
+  display: block;      /*treat each "paragraph" like a block but without margin*/
+  margin-bottom: 0.4em; /*small spacing between paragraphs*/
+  white-space: pre-wrap; /*preserve line breaks*/
+}
+
 .chat-message {
   margin-bottom: 10px;
   animation: fadeIn 0.3s ease;
