@@ -8,13 +8,9 @@ supabase
 pyjwt
 datetime
 waitress
-bcrypt
 openai>=1.0
 google-generativeai>=0.3.2
 langchain>=0.1.0
 langchain-community>=0.0.16
 faiss-cpu>=1.7.4
-sentence-transformers>=2.2.2
-unstructured
-spacy
-pdfminer.six
+sentence-transformers
