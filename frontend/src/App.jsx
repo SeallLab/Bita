@@ -6,7 +6,7 @@ import SuggestionTabs from './components/SuggestionsTabs';
 import SystemSpecsModal from './components/SystemSpecsModal';
 import SessionManager from './components/SessionManager';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = "http://localhost:5000";
 
 function App() {
   const [sessionId, setSessionId] = useState("");
