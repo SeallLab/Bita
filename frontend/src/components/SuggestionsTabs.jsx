@@ -1,8 +1,6 @@
 import React from 'react';
 
-const BACKEND_URL = "http://localhost:5000";
-
-/*A loan approval system that takes user data and decides if they should be approved and how much they should be approved for. The system takes in data like age, race, gender, current employment status, among other personal pieces of data.*/
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const bubbleStyle = {
   position: "relative",

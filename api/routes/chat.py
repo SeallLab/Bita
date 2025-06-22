@@ -1,68 +1,76 @@
 from contextlib import closing
 from datetime import datetime
+import uuid
 from flask import Blueprint, jsonify, request
 from llm_query import send_document_query
-from source_fetching import query_papers
+from vector_search import query_papers
 from database_connector import get_db_connection
 
 #Register route with Flask app
 chatting = Blueprint("chatting", __name__)
 
 #Save entered system details to database
-def store_system_details(cursor, session_id, system_details):
-    cursor.execute(
-        "INSERT INTO system_details (session_id, system_details) VALUES (%s, %s)",
-        (session_id, system_details)
-    )
+def store_system_details(session_id, system_details):
+    try:
+        session_uuid = str(uuid.UUID(session_id))
 
-#Save sent message to database
-def store_message(cursor, session_id, sender, message, timestamp):
-    cursor.execute(
-        "INSERT INTO messages (session_id, sender, message, timestamp) VALUES (%s, %s, %s, %s)",
-        (session_id, sender, message, timestamp)
-    )
+        supabase = get_db_connection()
+        supabase.table("system_details").insert({
+            "session_id": session_uuid,
+            "system_details": system_details
+        }).execute()
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
+
+#Saves message into database for chat retrieval
+def store_message(session_id, sender, message, timestamp):
+    try:
+        session_uuid = str(uuid.UUID(session_id))
+        
+        supabase = get_db_connection()
+        supabase.table("messages").insert({
+            "session_id": session_uuid,
+            "sender": sender,
+            "message": message,
+            "timestamp": timestamp.isoformat()
+        }).execute()
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
 #Fetches message history based on session ID
 def get_session_history(session_id):
-    conn = get_db_connection()
-    if conn is None:
-        return None
+    try:
+        supabase = get_db_connection()
+        message_response  = supabase.table("messages").select("*").eq("session_id", session_id).execute()
+        system_response  = supabase.table("system_details").select("*").eq("session_id", session_id).execute()
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
-    with closing(conn.cursor(dictionary=True, buffered=True)) as cursor:
-        cursor.execute("SELECT sender, message, timestamp FROM messages WHERE session_id = %s", (session_id,))
-        messages = cursor.fetchall()
-
-        cursor.execute("SELECT * FROM system_details WHERE session_id = %s", (session_id,))
-        system_details = cursor.fetchone()
-
-    conn.close()
-
-    if not messages:
+    if not message_response .data:
         return "not_found"
 
     return {
-        "messages": messages,
-        "system_details": system_details
+        "messages": message_response.data,
+        "system_details": system_response.data if system_response.data else None
     }
 
 def get_conversation_context(session_hash, limit=6):
-    conn = get_db_connection()
-    if conn is None:
-        return None
-    
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT sender, message
-        FROM messages
-        WHERE session_id = %s
-        ORDER BY timestamp DESC
-        LIMIT %s
-    """, (session_hash, limit))
+    try:
+        supabase = get_db_connection()
+        response = (
+            supabase
+            .table("messages")
+            .select("sender, message")
+            .eq("session_id", session_hash)
+            .order("timestamp", desc=True)
+            .limit(limit)
+            .execute()
+        )
+    except Exception as err:
+        return jsonify({"error": f"Database error: {err}"}), 500
 
-    messages = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return "\n".join(f"{msg['sender'].capitalize()}: {msg['message']}" for msg in reversed(messages))
+    messages = list(reversed(response.data))
+    return "\n".join(f"{m['sender'].capitalize()}: {m['message']}" for m in messages)
 
 #Message sent by user
 @chatting.route("/api/chat", methods=["POST"])
@@ -71,14 +79,11 @@ def chat():
     session_id = data["session_id"]
     user_message = data["message"]
 
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    cursor = conn.cursor(dictionary=True)
+    #Check session ID is valid format
+    session_uuid = str(uuid.UUID(session_id))
 
     #Save user message
-    store_message(cursor, session_id, "user", user_message, datetime.utcnow())
+    store_message(session_uuid, "user", user_message, datetime.utcnow())
 
     #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
@@ -86,11 +91,7 @@ def chat():
     bot_reply = send_document_query(user_message, context_docs, previous_chats)
 
     #Save bot reply
-    store_message(cursor, session_id, "bot", bot_reply, datetime.utcnow())
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    store_message(session_uuid, "bot", bot_reply, datetime.utcnow())
 
     #Return reply for frontend display
     return jsonify({"reply": bot_reply})
@@ -127,16 +128,6 @@ def store_system_specs():
     session_id = data["session_id"]
     system_details = data["system_details"]
 
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    cursor = conn.cursor(dictionary=True)
-
-    store_system_details(cursor, session_id, system_details)
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    store_system_details(session_id, system_details)
 
     return jsonify({"system_details": system_details}), 200

@@ -45,11 +45,6 @@ def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> 
     {user_query}
     """
 
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-    response = model.generate_content(prompt)
-    return response.text
-
-    '''
     try:
         #Query GPT first
         response = client.chat.completions.create(
@@ -69,7 +64,6 @@ def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> 
         model = genai.GenerativeModel("gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
         return response.text
-    '''
 
 def send_suggestion_query(message: str):
     prompt = f"""
@@ -82,11 +76,6 @@ def send_suggestion_query(message: str):
     and valid info about their system should be entered if attempted. 
     """
     
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-    response = model.generate_content(prompt)
-    return response.text
-
-    '''
     try:
         #Query GPT first
         response = client.chat.completions.create(
@@ -106,4 +95,3 @@ def send_suggestion_query(message: str):
         model = genai.GenerativeModel("gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
         return response.text
-    '''

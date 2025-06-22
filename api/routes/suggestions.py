@@ -12,20 +12,10 @@ def find_suggestions():
     session_id = data["session_id"]
     message = data["message"]
 
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
-    cursor = conn.cursor(dictionary=True)
-
-    store_message(cursor, session_id, "user", "According to my system details, what are some suggestions that you see could be possible?", datetime.utcnow())
+    store_message(session_id, "user", "According to my system details, what are some suggestions that you see could be possible?", datetime.utcnow())
 
     bot_reply = send_suggestion_query(message)
 
-    store_message(cursor, session_id, "bot", bot_reply, datetime.utcnow())
-
-    conn.commit()
-    cursor.close()
-    conn.close()
+    store_message(session_id, "bot", bot_reply, datetime.utcnow())
 
     return jsonify({"reply": bot_reply})
