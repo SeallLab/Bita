@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactMarkdown from "react-markdown";
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
 import SuggestionTabs from './components/SuggestionsTabs';
@@ -114,7 +115,7 @@ function App() {
             onClick={() => setShowSpecs(true)}
             className="system-specs-button"
           >
-            Enter System Specs
+            Enter System Details
           </button>
         </div>
 
@@ -129,14 +130,16 @@ function App() {
                 <strong className={m.sender === "user" ? "message-user" : "message-bot"}>
                   {m.sender === "user" ? "You" : "Nomi"}:
                 </strong>{" "}
-                <span className="message-text">{m.message}</span>
+                <div className="message-text">
+                  <ReactMarkdown>{m.message}</ReactMarkdown>
+                </div>
               </div>
             ))}
             {loading && <div style={{ color: "#888" }}><em>Nomi is thinking...</em></div>}
           </div>
 
           <div className="suggestion-bubbles">
-            <SuggestionTabs systemSpecs={systemSpecs} onSelect={setInput} />
+            <SuggestionTabs systemSpecs={systemSpecs} sessionId={sessionId} updateMessages={setMessages} loadingStatus={setLoading} />
           </div>
 
           <div className="input-row">

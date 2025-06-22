@@ -4,6 +4,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from waitress import serve
 from routes.chat import chatting
+from routes.suggestions import suggestions
 
 #Get env variables
 load_dotenv()
@@ -33,6 +34,7 @@ def require_api_key(f):
 
 #Add routes for chatting
 app.register_blueprint(chatting)
+app.register_blueprint(suggestions)
 
 #Default path
 @app.route("/", methods=["GET"])

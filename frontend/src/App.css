@@ -50,6 +50,25 @@ h2 {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
+.chat-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+/*Scrollbar handle*/
+.chat-box::-webkit-scrollbar-thumb {
+  background-color: #2c3e50;
+  border-radius: 4px;
+}
+
+/*Scrollbar track background*/
+.chat-box::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover {
+  background-color: #3c5f7f;
+}
+
 .input-row {
   display: flex;
   gap: 10px;
@@ -86,7 +105,23 @@ h2 {
 }
 
 .message-text {
+  padding-top: 4px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.message-text ul {
+  margin: 0.5em 0;
+  padding-left: 20px;
+}
+
+.message-text strong {
+  color: #a0c4ff;
+}
+
+.message-text em {
   color: #ccc;
+  font-style: italic;
 }
 
 .chat-message {

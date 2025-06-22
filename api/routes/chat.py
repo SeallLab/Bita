@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
-from llm_query import send_query
+from llm_query import send_document_query
 from source_fetching import query_papers
 from database_connector import get_db_connection
 
@@ -69,7 +69,7 @@ def chat():
     #Fetch Gemini answer from IEEE context and previous chat entries
     context_docs = query_papers(user_message)
     previous_chats = get_conversation_context(session_id)
-    bot_reply = send_query(user_message, context_docs, previous_chats, "gemini")
+    bot_reply = send_document_query(user_message, context_docs, previous_chats)
 
     #Save bot reply
     store_message(cursor, session_id, "bot", bot_reply, datetime.utcnow())
