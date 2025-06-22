@@ -1,0 +1,185 @@
+body {
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #ddd;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+  color: #a0c4ff;
+}
+
+.session-id {
+  font-size: 14px;
+  margin-bottom: 20px;
+  color: #888;
+}
+
+.session-id code {
+  color: #eee;
+}
+
+.system-specs-button {
+  background-color: #121212;
+  color: #a0c4ff;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.suggestion-bubbles {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.chat-box {
+  width: 80%;
+  min-height: 300px;
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #121212;
+  color: #eee;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.chat-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+/*Scrollbar handle*/
+.chat-box::-webkit-scrollbar-thumb {
+  background-color: #2c3e50;
+  border-radius: 4px;
+}
+
+/*Scrollbar track background*/
+.chat-box::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.chat-box::-webkit-scrollbar-thumb:hover {
+  background-color: #3c5f7f;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  width: 60%;
+  margin-bottom: 15px;
+}
+
+.input-box {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #1a1a1a;
+  color: #eee;
+}
+
+.send-button {
+  background-color: #2c3e50;
+  color: #a0c4ff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.message-user {
+  color: #a0c4ff;
+  font-weight: bold;
+}
+
+.message-bot {
+  color: #90ee90;
+  font-weight: bold;
+}
+
+.message-text {
+  padding-top: 4px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.message-text ul {
+  margin: 0.5em 0;
+  padding-left: 20px;
+}
+
+.message-text strong {
+  color: #a0c4ff;
+}
+
+.message-text em {
+  color: #ccc;
+  font-style: italic;
+}
+
+.message-text span {
+  display: block;      /*treat each "paragraph" like a block but without margin*/
+  margin-bottom: 0.4em; /*small spacing between paragraphs*/
+  white-space: pre-wrap; /*preserve line breaks*/
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.app-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #1e1e1e;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.app-inner {
+  width: 100%;
+  max-width: 1500px;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  box-sizing: border-box;
+}
+
+/*Header*/
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/*Chat and suggestions area*/
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

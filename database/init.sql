@@ -10,3 +10,8 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp TEXT
 );
 
+CREATE TABLE IF NOT EXISTS system_details (
+    session_id TEXT,
+    system_details TEXT
+);
+
