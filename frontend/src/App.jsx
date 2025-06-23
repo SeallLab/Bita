@@ -132,7 +132,7 @@ function App() {
       <div className="app-inner">
         {/* Header */}
         <div className="app-header">
-          <h2>Nomi</h2>
+          <h2>Bita</h2>
           <button
             onClick={() => setShowSpecs(true)}
             className="system-specs-button"
@@ -150,7 +150,7 @@ function App() {
             {messages.map((m, i) => (
               <div key={i} className="chat-message">
                 <strong className={m.sender === "user" ? "message-user" : "message-bot"}>
-                  {m.sender === "user" ? "You" : "Nomi"}:
+                  {m.sender === "user" ? "You" : "Bita"}:
                 </strong>{" "}
                 <div className="message-text">
                   <ReactMarkdown
@@ -164,7 +164,7 @@ function App() {
                 </div>
               </div>
             ))}
-            {loading && <div style={{ color: "#888" }}><em>Nomi is thinking...</em></div>}
+            {loading && <div style={{ color: "#888" }}><em>Bita is thinking...</em></div>}
           </div>
 
           <div className="suggestion-bubbles">
@@ -181,7 +181,7 @@ function App() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="input-box"
-              placeholder="Ask Nomi something..."
+              placeholder="Ask Bita something..."
             />
             <button
               onClick={sendMessage}
