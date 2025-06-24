@@ -5,7 +5,7 @@ const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSessi
   return (
     <div className="app-container">
       <div className="session-manager-inner">
-        <h2>Hi! I'm Nomi</h2>
+        <h2>Hi! I'm Bita</h2>
 
         <label htmlFor="session-id-input" style={{ color: "#ccc", fontSize: 14 }}>
           Enter Session ID to Load:
