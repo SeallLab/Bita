@@ -76,8 +76,14 @@ function App() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/chat/${hash}`);
       if (!res.ok) {
-        const err = await res.json();
-        setError(err.error || "Invalid session.");
+        let errMsg = "Invalid session.";
+        try {
+          const err = await res.json();
+          errMsg = err.error || errMsg;
+        } catch (jsonErr) {
+          errMsg = "Server error.";
+        }
+        setError(errMsg);
         return;
       }
 

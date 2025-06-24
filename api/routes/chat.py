@@ -12,7 +12,10 @@ chatting = Blueprint("chatting", __name__)
 #Save entered system details to database
 def store_system_details(session_id, system_details):
     try:
-        session_uuid = str(uuid.UUID(session_id))
+        try:
+            session_uuid = str(uuid.UUID(session_id))
+        except ValueError:
+            return jsonify({"error": "Invalid session ID format."}), 400
 
         supabase = get_db_connection()
         supabase.table("system_details").insert({
@@ -25,7 +28,10 @@ def store_system_details(session_id, system_details):
 #Saves message into database for chat retrieval
 def store_message(session_id, sender, message, timestamp):
     try:
-        session_uuid = str(uuid.UUID(session_id))
+        try:
+            session_uuid = str(uuid.UUID(session_id))
+        except ValueError:
+            return jsonify({"error": "Invalid session ID format."}), 400
         
         supabase = get_db_connection()
         supabase.table("messages").insert({
@@ -41,17 +47,18 @@ def store_message(session_id, sender, message, timestamp):
 def get_session_history(session_id):
     try:
         supabase = get_db_connection()
-        message_response  = supabase.table("messages").select("*").eq("session_id", session_id).execute()
-        system_response  = supabase.table("system_details").select("*").eq("session_id", session_id).execute()
+        message_response = supabase.table("messages").select("*").eq("session_id", session_id).execute()
+        system_response = supabase.table("system_details").select("*").eq("session_id", session_id).execute()
     except Exception as err:
-        return jsonify({"error": f"Database error: {err}"}), 500
+        print(f"Database error: {err}")
+        return None
 
-    if not message_response .data:
+    if not message_response.data:
         return "not_found"
 
     return {
-        "messages": message_response.data,
-        "system_details": system_response.data if system_response.data else None
+        "messages": message_response.data or [],
+        "system_details": system_response.data or []
     }
 
 def get_conversation_context(session_hash, limit=6):
@@ -99,13 +106,17 @@ def chat():
 #Restoring chat based on session_id
 @chatting.route("/api/chat/<session_id>", methods=["GET"])
 def get_chat(session_id):
+    try:
+        _ = str(uuid.UUID(session_id))  #Validate session ID
+    except ValueError:
+        return jsonify({"error": "Invalid session ID format"}), 400
+
     history = get_session_history(session_id)
     if history is None:
         return jsonify({"error": "Database connection failed"}), 500
     
     if history == "not_found":
         return jsonify({"error": "Session not found"}), 404
-
 
     messages = [
         {
@@ -116,9 +127,15 @@ def get_chat(session_id):
         for row in history["messages"]
     ]
 
+    system_details_list = history.get("system_details")
+    system_details_value = ""
+
+    if isinstance(system_details_list, list) and len(system_details_list) > 0:
+        system_details_value = system_details_list[0].get("system_details", "")
+
     return jsonify({
         "messages": messages,
-        "system_details": history["system_details"]["system_details"] if history["system_details"] else ""
+        "system_details": system_details_value
     })
 
 #Save entered system details to database

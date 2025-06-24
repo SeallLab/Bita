@@ -14,7 +14,6 @@ app = Flask(__name__)
 
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
 APP_URL = os.getenv('APP_URL')
-print(f"APP_URL = {APP_URL!r}")
 API_ACCESS_KEY = os.getenv('API_ACCESS_KEY')
 
 #Configure Flask session for HTTPS hosting
