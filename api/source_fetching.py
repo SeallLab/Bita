@@ -99,8 +99,6 @@ def query_papers(query, index_path="vector_store", top_k=5):
 
 if __name__ == "__main__":
     chunks, metadata = get_chunks_for_embedding(pdf_folder="papers")
-    for i, chunk in enumerate(chunks[:5]):
-        print(f"Chunk {i+1}:\n{chunk[:300]}...\n")
 
     build_local_index(pdf_folder="papers")
 
