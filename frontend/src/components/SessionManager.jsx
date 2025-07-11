@@ -8,9 +8,9 @@ const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSessi
   });
 
   const handleLoadSession = async () => {
-    await tryLoadSession(); //Try to load session based on session ID
+    await tryLoadSession();
 
-    if (error || !inputHash) return; //If there was an error, don't save the session ID
+    if (error || !inputHash) return;
 
     const trimmed = inputHash.trim();
     if (trimmed && !storedSessionIds.includes(trimmed)) {
@@ -23,8 +23,18 @@ const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSessi
   return (
     <div className="app-container">
       <div className="session-manager-inner">
-        <h2>Hi! I'm Bita</h2>
 
+        {/* Intro Box */}
+        <div className="intro-box">
+          <h2 style={{ marginTop: 0 }}>Hi! I'm Bita 👋</h2>
+          <p>
+            Bita helps software testers explore AI systems for potential fairness issues. 
+            Enter a session ID below to continue your previous work, or start a new session to begin analyzing your system. 
+            I’ll guide you through identifying biases, evaluating fairness criteria, and documenting issues.
+          </p>
+        </div>
+
+        {/* Session ID Input */}
         <label htmlFor="session-id-input" style={{ color: "#ccc", fontSize: 14 }}>
           Enter Session ID to Load:
         </label>

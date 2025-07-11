@@ -1,0 +1,62 @@
+.suggestion-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: -18px;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  background-color: #1a1a1a;
+  padding: 4px;
+}
+
+.suggestion-button {
+  padding: 10px 16px;
+  border: none;
+  background-color: transparent;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  border-right: 1px solid #333;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.suggestion-button:last-child {
+  border-right: none;
+}
+
+.suggestion-button:hover {
+  background-color: #2c3e50;
+  color: #a0c4ff;
+}
+
+.suggestion-button.active {
+  background-color: #2c3e50;
+  color: #a0c4ff;
+  font-weight: bold;
+}
+
+.suggestion-tooltip {
+  position: absolute;
+  bottom: -42px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1a1a1a;
+  color: #a0c4ff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.suggestion-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.suggestion-wrapper:hover .suggestion-tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
