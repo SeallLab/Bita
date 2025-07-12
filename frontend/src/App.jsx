@@ -3,8 +3,9 @@ import ReactMarkdown from "react-markdown";
 import './App.css';
 import { v4 as uuidv4 } from 'uuid';
 import SuggestionTabs from './components/SuggestionsTabs';
-import SystemSpecsModal from './components/SystemSpecsModal';
+import SystemSpecsDisplay from './components/SystemSpecsDisplay';
 import SessionManager from './components/SessionManager';
+import BitaTour from './components/BitaTour';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -18,11 +19,21 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showSpecs, setShowSpecs] = useState(false);
   const [systemSpecs, setSystemSpecs] = useState("");
+  const [runTour, setRunTour] = useState(false);
 
   useEffect(() => {
     if (confirmed && sessionId) {
       localStorage.setItem("session_id", sessionId);
-      fetchChat(sessionId);
+      fetchChat(sessionId).then((loaded) => {
+        if (loaded?.length === 0) {
+          //No messages yet, show intro
+          const introMessage = {
+            sender: "bot",
+            message: "Hi there! I'm Bita. You can ask me about system testing, bias detection, or anything related to your project setup. How can I help today?"
+          };
+          setMessages([introMessage]);
+        }
+      });
     }
   }, [confirmed, sessionId]);
 
@@ -34,15 +45,17 @@ function App() {
         setError(errorData.error || "An unknown error occurred.");
         setMessages([]);
         setSystemSpecs("");
-        return;
+        return [];
       }
 
       const data = await res.json();
       setMessages(data.messages);
       setSystemSpecs(data.system_details);
       setError(null);
+      return data.messages;
     } catch (err) {
       setError("Unable to connect to the server.");
+      return [];
     }
   };
 
@@ -135,15 +148,26 @@ function App() {
 
   return (
     <div className="app-container">
+      {/*Tutorial Component*/}
+      <BitaTour run={runTour} setRun={setRunTour} />
+
       <div className="app-inner">
         {/* Header */}
         <div className="app-header">
           <h2>Bita</h2>
           <button
-            onClick={() => setShowSpecs(true)}
-            className="system-specs-button"
+            onClick={() => setRunTour(true)}
+            style={{
+              marginLeft: "auto",
+              backgroundColor: "#3c5f7f",
+              color: "white",
+              border: "none",
+              padding: "6px 12px",
+              borderRadius: "6px",
+              cursor: "pointer"
+            }}
           >
-            Enter System Details
+            How to Use Bita
           </button>
         </div>
 
@@ -199,12 +223,10 @@ function App() {
           </div>
         </div>
 
-        <SystemSpecsModal
-          isOpen={showSpecs}
-          onClose={() => setShowSpecs(false)}
-          systemSpecs={systemSpecs}
-          setSystemSpecs={setSystemSpecs}
-          saveSystemSpecs={saveSystemSpecs}
+        <SystemSpecsDisplay
+            systemSpecs={systemSpecs}
+            setSystemSpecs={setSystemSpecs}
+            saveSystemSpecs={saveSystemSpecs}
         />
       </div>
     </div>

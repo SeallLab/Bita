@@ -1,68 +1,31 @@
 import React from 'react';
+import "../styles/SuggestionsTabs.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-const bubbleStyle = {
-  position: "relative",
-  borderRadius: 20,
-  padding: "10px 16px",
-  background: "#2c3e50",
-  color: "#a0c4ff",
-  border: "1px solid #34495e",
-  cursor: "pointer",
-  transition: "all 0.2s ease",
-  textAlign: "center",
-};
-
-const tooltipStyle = {
-  visibility: "hidden",
-  width: 200,
-  backgroundColor: "#1a1a1a",
-  color: "#a0c4ff",
-  textAlign: "center",
-  borderRadius: 6,
-  padding: "8px",
-  position: "absolute",
-  zIndex: 1,
-  bottom: "-50px",
-  left: "50%",
-  transform: "translateX(-50%)",
-  fontSize: 12,
-  opacity: 0,
-  transition: "opacity 0.3s",
-};
-
-const wrapperStyle = {
-  position: "relative",
-  display: "inline-block",
-};
-
-const showTooltip = {
-  ...tooltipStyle,
-  visibility: "visible",
-  opacity: 1,
-};
-
-function SuggestionButton({ label, description, onClick }) {
+function SuggestionButton({ label, description, onClick, active }) {
   const [hovered, setHovered] = React.useState(false);
 
   return (
-    <div
-      style={wrapperStyle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <button style={bubbleStyle} onClick={onClick}>
+    <div className="suggestion-wrapper">
+      <button
+        className={`suggestion-button ${active ? "active" : ""}`}
+        onClick={onClick}
+      >
         {label}
       </button>
       <div style={hovered ? showTooltip : tooltipStyle}>
         {description}
       </div>
+      <div className="suggestion-tooltip">{description}</div>
     </div>
   );
 }
 
+//Handles the suggestion buttons, and the specific prompts that are sent for each button
 export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages, loadingStatus }) {
+  const [activeTab, setActiveTab] = useState(null);
+
   const handleClick = async (type) => {
     if (!systemSpecs) {
       alert("Please enter your system specs first.");
@@ -70,6 +33,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     }
 
     loadingStatus(true);
+    setActiveTab(type);
 
     let userMessage = "";
     let systemMessage = "";
@@ -77,7 +41,14 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     switch (type) {
       case 1:
         userMessage = "According to my system details, what are some biases that you see could be possible?";
-        systemMessage = `Given this system context: "${systemSpecs}", what are the possible fairness or bias issues to watch for?`;
+        systemMessage = `Given this system context: "${systemSpecs}", what are the possible fairness or bias issues to watch for? Follow this format, listing 5-10 possible bugs:
+        
+          (Paragraph about components that could cause bias)
+          Here are some bugs that could occur from ___ bias:
+          **Bug ___**: List the bug here
+          **Bug ___**: List the bug here
+          
+          Follow this structure exactly, with minimal spacing between each bug entry and spacing between each type of bias.`;
         break;
       case 2:
         userMessage = "Can you review my testing plan?";
@@ -85,7 +56,14 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
         break;
       case 3:
         userMessage = "Can you generate some exploratory testing charters?";
-        systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate some exploratory testing charters I can use?`;
+        systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate 3-5 exploratory testing charters I can use? Use this formatting:
+          **Charter ___:**
+          ***Goal:*** Description of what to test.
+          ***Time:*** How long keep testing
+          ***Focus:***
+            - List of things to explore within that goal and time.
+
+          Follow this structure exactly, with minimal spacing between each entry. Do not include extra commentary outside the charter.`;
         break;
       default:
         return;
@@ -113,21 +91,24 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+    <div className="suggestion-tabs">
       <SuggestionButton
         label="Bias Detection"
         description="Identify potential unfair treatment in your system"
         onClick={() => handleClick(1)}
+        active={activeTab === 1}
       />
       <SuggestionButton
         label="Plan Check"
         description="Evaluate if your testing plan is missing key aspects"
         onClick={() => handleClick(2)}
+        active={activeTab === 2}
       />
       <SuggestionButton
         label="Testing Charters"
         description="Generate exploratory test ideas for fairness"
         onClick={() => handleClick(3)}
+        active={activeTab === 3}
       />
     </div>
   );
