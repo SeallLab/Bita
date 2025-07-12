@@ -24,7 +24,16 @@ function App() {
   useEffect(() => {
     if (confirmed && sessionId) {
       localStorage.setItem("session_id", sessionId);
-      fetchChat(sessionId);
+      fetchChat(sessionId).then((loaded) => {
+        if (loaded?.length === 0) {
+          //No messages yet, show intro
+          const introMessage = {
+            sender: "bot",
+            message: "Hi there! I'm Bita. You can ask me about system testing, bias detection, or anything related to your project setup. How can I help today?"
+          };
+          setMessages([introMessage]);
+        }
+      });
     }
   }, [confirmed, sessionId]);
 
@@ -36,15 +45,17 @@ function App() {
         setError(errorData.error || "An unknown error occurred.");
         setMessages([]);
         setSystemSpecs("");
-        return;
+        return [];
       }
 
       const data = await res.json();
       setMessages(data.messages);
       setSystemSpecs(data.system_details);
       setError(null);
+      return data.messages;
     } catch (err) {
       setError("Unable to connect to the server.");
+      return [];
     }
   };
 
