@@ -15,6 +15,7 @@ function SuggestionButton({ label, description, onClick, active }) {
   );
 }
 
+//Handles the suggestion buttons, and the specific prompts that are sent for each button
 export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages, loadingStatus }) {
   const [activeTab, setActiveTab] = useState(null);
 
@@ -33,7 +34,14 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     switch (type) {
       case 1:
         userMessage = "According to my system details, what are some biases that you see could be possible?";
-        systemMessage = `Given this system context: "${systemSpecs}", what are the possible fairness or bias issues to watch for?`;
+        systemMessage = `Given this system context: "${systemSpecs}", what are the possible fairness or bias issues to watch for? Follow this format, listing 5-10 possible bugs:
+        
+          (Paragraph about components that could cause bias)
+          Here are some bugs that could occur from ___ bias:
+          **Bug ___**: List the bug here
+          **Bug ___**: List the bug here
+          
+          Follow this structure exactly, with minimal spacing between each bug entry and spacing between each type of bias.`;
         break;
       case 2:
         userMessage = "Can you review my testing plan?";
@@ -41,7 +49,14 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
         break;
       case 3:
         userMessage = "Can you generate some exploratory testing charters?";
-        systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate some exploratory testing charters I can use?`;
+        systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate 3-5 exploratory testing charters I can use? Use this formatting:
+          **Charter ___:**
+          ***Goal:*** Description of what to test.
+          ***Time:*** How long keep testing
+          ***Focus:***
+            - List of things to explore within that goal and time.
+
+          Follow this structure exactly, with minimal spacing between each entry. Do not include extra commentary outside the charter.`;
         break;
       default:
         return;
