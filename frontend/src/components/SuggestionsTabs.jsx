@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PlanCheckModal from './PlanCheckModal';
 import "../styles/SuggestionsTabs.css";
 
 function SuggestionButton({ label, description, onClick, active }) {
@@ -16,7 +17,7 @@ function SuggestionButton({ label, description, onClick, active }) {
 }
 
 //Handles the suggestion buttons, and the specific prompts that are sent for each button
-export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages, loadingStatus }) {
+export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages, loadingStatus, openPlanModal }) {
   const [activeTab, setActiveTab] = useState(null);
 
   const handleClick = async (type) => {
@@ -31,6 +32,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     let userMessage = "";
     let systemMessage = "";
 
+    //Plan Check handled in App.jsx, handles opening modal and submitting with message
     switch (type) {
       case 1:
         userMessage = "According to my system details, what are some biases that you see could be possible?";
@@ -44,10 +46,6 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
           Follow this structure exactly, with minimal spacing between each bug entry and spacing between each type of bias.`;
         break;
       case 2:
-        userMessage = "Can you review my testing plan?";
-        systemMessage = `Here are my system specs and test plan: "${systemSpecs}". Is there anything missing in this testing plan from a fairness perspective?`;
-        break;
-      case 3:
         userMessage = "Can you generate some exploratory testing charters?";
         systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate 3-5 exploratory testing charters I can use? Use this formatting:
           **Charter ___:**
@@ -91,13 +89,13 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
       <SuggestionButton
         label="Plan Check"
         description="Evaluate if your testing plan is missing key aspects"
-        onClick={() => handleClick(2)}
+        onClick={openPlanModal}
         active={activeTab === 2}
       />
       <SuggestionButton
         label="Testing Charters"
         description="Generate exploratory test ideas for fairness"
-        onClick={() => handleClick(3)}
+        onClick={() => handleClick(2)}
         active={activeTab === 3}
       />
     </div>
