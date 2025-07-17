@@ -12,9 +12,6 @@ function SuggestionButton({ label, description, onClick, active }) {
       >
         {label}
       </button>
-      <div style={hovered ? showTooltip : tooltipStyle}>
-        {description}
-      </div>
       <div className="suggestion-tooltip">{description}</div>
     </div>
   );
