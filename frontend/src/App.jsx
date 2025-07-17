@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import SuggestionTabs from './components/SuggestionsTabs';
 import SystemSpecsDisplay from './components/SystemSpecsDisplay';
 import SessionManager from './components/SessionManager';
-import PlanCheckModal from './components/PlanCheckModal';
 import BitaTour from './components/BitaTour';
 
 const BACKEND_URL = "http://localhost:5000";
@@ -20,7 +19,6 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [systemSpecs, setSystemSpecs] = useState("");
   const [runTour, setRunTour] = useState(false);
-  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   useEffect(() => {
     if (confirmed && sessionId) {
@@ -125,27 +123,6 @@ function App() {
     }
   };
 
-  const handlePlanSubmit = async (input) => {
-    const userMsg = `Please review the following plan and provide feedback on its fairness evaluation aspects:\n\n${input.text}`;
-    setMessages(prev => [...prev, { sender: "user", message: userMsg }]);
-    setLoading(true);
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId, message: userMsg }),
-      });
-
-      const data = await res.json();
-      setMessages(prev => [...prev, { sender: "bot", message: data.reply }]);
-    } catch (err) {
-      console.error("Plan check failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (!confirmed) {
     return (
       <SessionManager
@@ -218,7 +195,6 @@ function App() {
               sessionId={sessionId} 
               updateMessages={setMessages} 
               loadingStatus={setLoading} 
-              openPlanModal={() => setIsPlanModalOpen(true)}
             />
           </div>
 
@@ -245,12 +221,6 @@ function App() {
             saveSystemSpecs={saveSystemSpecs}
           />
       </div>
-
-      <PlanCheckModal
-        isOpen={isPlanModalOpen}
-        onClose={() => setIsPlanModalOpen(false)}
-        onSubmit={handlePlanSubmit}
-      />
     </div>
   );
 }
