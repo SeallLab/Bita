@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import "../styles/SuggestionsTabs.css";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 function SuggestionButton({ label, description, onClick, active }) {
-  const [hovered, setHovered] = React.useState(false);
-
   return (
     <div className="suggestion-wrapper">
       <button

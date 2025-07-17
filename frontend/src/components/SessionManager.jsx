@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/SessionManager.css';
 
 const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSession, error }) => {
-  const [storedSessionIds, setStoredSessionIds] = React.useState(() => {
+  const [storedSessionIds, setStoredSessionIds] = useState(() => {
     const saved = localStorage.getItem("bita-session-ids");
     return saved ? JSON.parse(saved) : [];
   });
