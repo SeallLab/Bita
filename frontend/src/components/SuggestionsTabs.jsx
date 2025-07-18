@@ -93,7 +93,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     loadingStatus(true);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/chat`, {
+      const res = await fetch(`${BACKEND_URL}/api/suggestions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId, message: systemMessage }),

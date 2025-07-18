@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
+from source_fetching import query_papers
 from llm_query import send_suggestion_query
 from database_connector import get_db_connection
 from routes.chat import store_message
@@ -20,7 +21,8 @@ def find_suggestions():
 
     store_message(cursor, session_id, "user", "According to my system details, what are some suggestions that you see could be possible?", datetime.utcnow())
 
-    bot_reply = send_suggestion_query(message)
+    context_docs = query_papers(message)
+    bot_reply = send_suggestion_query(message, context_docs)
 
     store_message(cursor, session_id, "bot", bot_reply, datetime.utcnow())
 
