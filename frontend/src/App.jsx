@@ -17,7 +17,6 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showSpecs, setShowSpecs] = useState(false);
   const [systemSpecs, setSystemSpecs] = useState("");
   const [runTour, setRunTour] = useState(false);
 
@@ -89,14 +88,8 @@ function App() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/chat/${hash}`);
       if (!res.ok) {
-        let errMsg = "Invalid session.";
-        try {
-          const err = await res.json();
-          errMsg = err.error || errMsg;
-        } catch (jsonErr) {
-          errMsg = "Server error.";
-        }
-        setError(errMsg);
+        const err = await res.json();
+        setError(err.error || "Invalid session.");
         return;
       }
 
@@ -148,7 +141,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/*Tutorial Component*/}
       <BitaTour run={runTour} setRun={setRunTour} />
 
       <div className="app-inner">
@@ -196,7 +188,7 @@ function App() {
             ))}
             {loading && <div style={{ color: "#888" }}><em>Bita is thinking...</em></div>}
           </div>
-
+            
           <div className="suggestion-bubbles">
             <SuggestionTabs 
               systemSpecs={systemSpecs} 
@@ -227,7 +219,7 @@ function App() {
             systemSpecs={systemSpecs}
             setSystemSpecs={setSystemSpecs}
             saveSystemSpecs={saveSystemSpecs}
-        />
+          />
       </div>
     </div>
   );
