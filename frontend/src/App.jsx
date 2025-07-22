@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from "react-markdown";
 import './App.css';
+import BitaLogo from "./images/Bita.svg";
 import { v4 as uuidv4 } from 'uuid';
 import SuggestionTabs from './components/SuggestionsTabs';
 import SystemSpecsDisplay from './components/SystemSpecsDisplay';
@@ -146,6 +147,7 @@ function App() {
       <div className="app-inner">
         {/* Header */}
         <div className="app-header">
+          <img className="bita-logo" src={BitaLogo} alt="Bita Logo" />
           <h2>Bita</h2>
           <button
             onClick={() => setRunTour(true)}
