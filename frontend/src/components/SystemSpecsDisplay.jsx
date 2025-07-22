@@ -9,6 +9,7 @@ export default function SystemSpecsDisplay({ systemSpecs, setSystemSpecs, saveSy
       setDraftSpecs(systemSpecs || "");
     }, [systemSpecs]);
 
+  //Updates database with system details, sets frontend system details to new specs
   const handleSave = () => {
     setSystemSpecs(draftSpecs);
     saveSystemSpecs(draftSpecs);

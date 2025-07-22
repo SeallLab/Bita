@@ -9,6 +9,7 @@ GPT_API_KEY=os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(api_key=GPT_API_KEY)
 
+#Send prompt with chat history, documents, and user message
 def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> str:
     context = "\n\n".join([doc.page_content for doc in context_docs])
 
@@ -57,6 +58,7 @@ def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> 
         response = model.generate_content(prompt)
         return response.text
 
+#Adjusted LLM query for suggestion buttons
 def send_suggestion_query(message: str, context_docs: list):
     context = "\n\n".join([doc.page_content for doc in context_docs])
     

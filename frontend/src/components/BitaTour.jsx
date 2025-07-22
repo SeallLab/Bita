@@ -1,5 +1,6 @@
 import Joyride from 'react-joyride';
 
+//Tutorial button of how to use Bita, holds steps and formatting based on React Joyride
 export default function BitaTour({ run, setRun }) {
   const steps = [
     {

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import '../styles/PlanCheckModal.css';
 
+//Modal that appears with Plan Check suggestion button
 export default function PlanCheckModal({ isOpen, onClose, onSubmit }) {
   const [planText, setPlanText] = useState('');
   const [showExample, setShowExample] = useState(false);
 
+  //When plan is submitted, sends plan to LLM for critique based on suggestion query
   const handleSubmit = () => {
     const trimmed = planText.trim();
     if (!trimmed) {

@@ -82,6 +82,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     }
   };
 
+  //Plan check handled here, has custom LLM message and modal logic
   const handlePlanSubmit = async (planText) => {
     setIsModalOpen(false);
     loadingStatus(true);

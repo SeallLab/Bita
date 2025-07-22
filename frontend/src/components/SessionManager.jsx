@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/SessionManager.css';
 
+//Handles session restoration based on entered session ID
 const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSession, error }) => {
   const [storedSessionIds, setStoredSessionIds] = useState(() => {
     const saved = localStorage.getItem("bita-session-ids");
@@ -12,6 +13,7 @@ const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSessi
 
     if (error || !inputHash) return; //If there was an error, don't save the session ID
 
+    //If session is valid, update local storage with new ID for easier entry later
     const trimmed = inputHash.trim();
     if (trimmed && !storedSessionIds.includes(trimmed)) {
       const updated = [...storedSessionIds, trimmed];

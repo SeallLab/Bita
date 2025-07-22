@@ -6,6 +6,7 @@ from routes.chat import store_message
 
 suggestions = Blueprint("suggestions", __name__)
 
+#Custom LLM route for suggestion buttons, different LLM prompt than a normal message
 @suggestions.route("/api/suggestions", methods=["POST"])
 def find_suggestions():
     data = request.json

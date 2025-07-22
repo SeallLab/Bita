@@ -5,6 +5,7 @@ from supabase import create_client, Client
 #Load environment variables
 load_dotenv()
 
+#Single instance of database connection
 class SupabaseSingleton:
     _instance: Client = None
 
@@ -25,6 +26,7 @@ class SupabaseSingleton:
                 cls._instance = None
         return cls._instance
 
+#Fetch instance of database connection
 def get_db_connection() -> Client:
     """Returns the singleton instance of the Supabase client."""
     return SupabaseSingleton.get_instance()

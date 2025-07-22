@@ -20,6 +20,7 @@ function App() {
   const [systemSpecs, setSystemSpecs] = useState("");
   const [runTour, setRunTour] = useState(false);
 
+  //When session is confirmed, store it and fetch chat history
   useEffect(() => {
     if (confirmed && sessionId) {
       localStorage.setItem("session_id", sessionId);
@@ -36,6 +37,7 @@ function App() {
     }
   }, [confirmed, sessionId]);
 
+  //Fetch existing messages and system details from the backend
   const fetchChat = async (id) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/chat/${id}`);
@@ -58,6 +60,7 @@ function App() {
     }
   };
 
+  //Send a new user message to the backend and append bot reply
   const sendMessage = async () => {
     if (!input.trim()) return;
     setLoading(true);
@@ -81,6 +84,7 @@ function App() {
     }
   };
 
+  //Try to load a chat session by its hash (ID)
   const tryLoadSession = async () => {
     const hash = inputHash.trim();
     if (!hash) return;
@@ -104,6 +108,7 @@ function App() {
     }
   };
 
+  //Save updated system specifications to the backend
   const saveSystemSpecs = async (specs) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/system_details`, {
@@ -123,6 +128,7 @@ function App() {
     }
   };
 
+  //Render SessionManager if session is not yet confirmed
   if (!confirmed) {
     return (
       <SessionManager
