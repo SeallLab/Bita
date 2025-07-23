@@ -1,6 +1,10 @@
 from contextlib import closing
 from datetime import datetime
+from cryptography.fernet import Fernet
+import os
+from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
+import hashlib
 from llm_query import send_document_query
 from source_fetching import query_papers
 from database_connector import get_db_connection
@@ -8,32 +12,67 @@ from database_connector import get_db_connection
 #Register route with Flask app
 chatting = Blueprint("chatting", __name__)
 
+#Load environment variables
+load_dotenv()
+
+#Verify encryption key is available
+FERNET_KEY = os.getenv("MESSAGE_ENCRYPTION_KEY")
+fernet = Fernet(FERNET_KEY)
+
+#Helpers to encrypt and decrypt messages
+def encrypt_text(value: str | None) -> str:
+    if value is None:
+        value = ""
+    return fernet.encrypt(value.encode()).decode()
+
+def decrypt_text(token: str | None) -> str:
+    if not token:
+        return ""
+    try:
+        return fernet.decrypt(token.encode()).decode()
+    except Exception:
+        return "[decryption failed]"
+
 #Save entered system details to database
 def store_system_details(cursor, session_id, system_details):
+    encrypted_details = encrypt_text(system_details)
     cursor.execute(
-        "INSERT INTO system_details (session_id, system_details) VALUES (%s, %s)",
-        (session_id, system_details)
+        """
+        INSERT INTO system_details (session_id, system_details)
+        VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE system_details = VALUES(system_details)
+        """,
+        (session_id, encrypted_details)
     )
 
 #Save sent message to database
 def store_message(cursor, session_id, sender, message, timestamp):
+    encrypted_message = encrypt_text(message)
     cursor.execute(
         "INSERT INTO messages (session_id, sender, message, timestamp) VALUES (%s, %s, %s, %s)",
-        (session_id, sender, message, timestamp)
+        (session_id, sender, encrypted_message, timestamp)
     )
 
-#Fetches message history based on session ID
+#Fetches message history and system details based on session ID
 def get_session_history(session_id):
     conn = get_db_connection()
     if conn is None:
         return None
 
     with closing(conn.cursor(dictionary=True, buffered=True)) as cursor:
+        #Fetch messages and decrypt
         cursor.execute("SELECT sender, message, timestamp FROM messages WHERE session_id = %s", (session_id,))
         messages = cursor.fetchall()
 
+        for msg in messages:
+            msg["message"] = decrypt_text(msg["message"])
+
+        #Fetch system details and decrypt
         cursor.execute("SELECT * FROM system_details WHERE session_id = %s", (session_id,))
-        system_details = cursor.fetchone()
+        raw_sd = cursor.fetchone()
+        if raw_sd:
+            raw_sd["system_details"] = decrypt_text(raw_sd["system_details"])
+        system_details = raw_sd
 
     conn.close()
 
@@ -45,6 +84,7 @@ def get_session_history(session_id):
         "system_details": system_details
     }
 
+#Fetches last 6 messages for conversation context
 def get_conversation_context(session_hash, limit=6):
     conn = get_db_connection()
     if conn is None:
@@ -62,7 +102,7 @@ def get_conversation_context(session_hash, limit=6):
     messages = cursor.fetchall()
     cursor.close()
     conn.close()
-    return "\n".join(f"{msg['sender'].capitalize()}: {msg['message']}" for msg in reversed(messages))
+    return "\n".join(f"{msg['sender'].capitalize()}: {decrypt_text(msg['message'])}" for msg in reversed(messages))
 
 #Message sent by user
 @chatting.route("/api/chat", methods=["POST"])
@@ -105,7 +145,7 @@ def get_chat(session_id):
     if history == "not_found":
         return jsonify({"error": "Session not found"}), 404
 
-
+    #Restore messages and system details
     messages = [
         {
             "sender": row["sender"],

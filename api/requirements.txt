@@ -5,6 +5,7 @@ python-dotenv
 flask-session
 supabase
 mysql-connector-python
+cryptography
 datetime
 waitress
 openai>=1.0
