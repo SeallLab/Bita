@@ -1,0 +1,6 @@
+python-dotenv
+sentence-transformers
+langchain
+unstructured
+spacy
+supabase
