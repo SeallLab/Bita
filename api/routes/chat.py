@@ -1,6 +1,9 @@
 from contextlib import closing
 from datetime import datetime
+import os
+from cryptography.fernet import Fernet
 import uuid
+from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
 from llm_query import send_document_query
 from vector_search import query_papers
@@ -8,6 +11,27 @@ from database_connector import get_db_connection
 
 #Register route with Flask app
 chatting = Blueprint("chatting", __name__)
+
+#Load environment variables
+load_dotenv()
+
+#Verify encryption key is available
+FERNET_KEY = os.getenv("MESSAGE_ENCRYPTION_KEY")
+fernet = Fernet(FERNET_KEY)
+
+#Helpers to encrypt and decrypt messages
+def encrypt_text(value: str | None) -> str:
+    if value is None:
+        value = ""
+    return fernet.encrypt(value.encode()).decode()
+
+def decrypt_text(token: str | None) -> str:
+    if not token:
+        return ""
+    try:
+        return fernet.decrypt(token.encode()).decode()
+    except Exception:
+        return "[decryption failed]"
 
 #Save entered system details to database
 def store_system_details(session_id, system_details):
@@ -17,12 +41,15 @@ def store_system_details(session_id, system_details):
             session_uuid = str(uuid.UUID(session_id))
         except ValueError:
             return jsonify({"error": "Invalid session ID format."}), 400
+        
+        #Encryot system details
+        encrypted_details = encrypt_text(system_details)
 
         #Create supabase connection and update system details based on ID
         supabase = get_db_connection()
         supabase.table("system_details").insert({
             "session_id": session_uuid,
-            "system_details": system_details
+            "system_details": encrypted_details
         }).execute()
     except Exception as err:
         return jsonify({"error": f"Database error: {err}"}), 500
@@ -36,12 +63,14 @@ def store_message(session_id, sender, message, timestamp):
         except ValueError:
             return jsonify({"error": "Invalid session ID format."}), 400
         
+        encrypted_message = encrypt_text(message)
+        
         #Create supabase connection and add message with details, based on ID
         supabase = get_db_connection()
         supabase.table("messages").insert({
             "session_id": session_uuid,
             "sender": sender,
-            "message": message,
+            "message": encrypted_message,
             "timestamp": timestamp.isoformat()
         }).execute()
     except Exception as err:
@@ -61,11 +90,25 @@ def get_session_history(session_id):
     #No messages found, new session created
     if not message_response.data:
         return "not_found"
+    
+    # Decrypt messages
+    decrypted_messages = []
+    for msg in message_response.data:
+        decrypted_messages.append({
+            "sender": msg["sender"],
+            "message": decrypt_text(msg["message"]),
+            "timestamp": msg["timestamp"],
+        })
+
+    # Decrypt system details
+    system_details_list = system_response.data or []
+    if system_details_list:
+        system_details_list[0]["system_details"] = decrypt_text(system_details_list[0].get("system_details"))
 
     #Session found, return
     return {
-        "messages": message_response.data or [],
-        "system_details": system_response.data or []
+        "messages": decrypted_messages,
+        "system_details": system_details_list
     }
 
 #Fetch last 6 chats to feed to LLM for previous conversation context
@@ -84,9 +127,9 @@ def get_conversation_context(session_hash, limit=6):
     except Exception as err:
         return jsonify({"error": f"Database error: {err}"}), 500
 
-    #Return messages in chronological order
+    #Return messages in chronological order, decrypt first
     messages = list(reversed(response.data))
-    return "\n".join(f"{m['sender'].capitalize()}: {m['message']}" for m in messages)
+    return "\n".join(f"{m['sender'].capitalize()}: {decrypt_text(m['message'])}" for m in messages)
 
 #Message sent by user
 @chatting.route("/api/chat", methods=["POST"])
