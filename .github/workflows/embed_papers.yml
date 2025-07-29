@@ -27,8 +27,10 @@ jobs:
 
     - name: Install dependencies
       run: |
+        sudo apt-get update && sudo apt-get install -y poppler-utils libgl1 tesseract-ocr build-essential python3-dev
         python -m pip install --upgrade pip
         pip install -r api/vector_requirements.txt
+        python -m spacy download en_core_web_sm
 
     - name: Run embedding script
       run: python api/vector_search.py

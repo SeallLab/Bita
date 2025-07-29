@@ -1,11 +1,16 @@
 import os
 import re
+import nltk
 from sentence_transformers import SentenceTransformer
-from langchain.document_loaders import UnstructuredPDFLoader
+from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import SpacyTextSplitter
 from langchain.schema import Document
 from supabase import create_client
 from dotenv import load_dotenv
+
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
 
 load_dotenv()
 
