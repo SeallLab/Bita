@@ -11,6 +11,11 @@ load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URI")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+
+#Ensure credentials are loaded
+if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+    raise ValueError("Missing SUPABASE_URI or SUPABASE_SERVICE_KEY in .env")
+
 supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 #Cache the model to avoid reloading it multiple times
