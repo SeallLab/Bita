@@ -3,10 +3,12 @@ from openai import OpenAI
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+#Get env variables
 load_dotenv()
 
 GPT_API_KEY=os.getenv("OPENAI_API_KEY")
 
+#Set up OpenAI client with GPT API Key
 client = OpenAI(api_key=GPT_API_KEY)
 
 #Send prompt with chat history, documents, and user message
