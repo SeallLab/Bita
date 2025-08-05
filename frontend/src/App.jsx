@@ -30,7 +30,7 @@ function App() {
           //No messages yet, show intro
           const introMessage = {
             sender: "bot",
-            message: "Hi there! I'm Bita. You can ask me about system testing, bias detection, or anything related to your project setup. How can I help today?"
+            message: "Hi there! I'm Bita. You can ask me about fairness testing and bias detection. How can I help today?"
           };
           setMessages([introMessage]);
         }
@@ -137,9 +137,11 @@ function App() {
         setInputHash={setInputHash}
         tryLoadSession={tryLoadSession}
         startNewSession={() => {
-          setSessionId(uuidv4());
+          const newId = uuidv4();
+          setSessionId(newId);
           setConfirmed(true);
           setError(null);
+          return newId; //Return so SessionManager can store it
         }}
         error={error}
       />

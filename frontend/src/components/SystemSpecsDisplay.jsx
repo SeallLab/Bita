@@ -22,11 +22,11 @@ export default function SystemSpecsDisplay({ systemSpecs, setSystemSpecs, saveSy
       {!isEditing && (
         <div className="system-specs-floating-box">
           <div className="system-specs-header">
-            <span className="specs-title">System Specs</span>
+            <span className="specs-title">System Details</span>
             <button className="edit-btn" onClick={() => setIsEditing(true)}>✏️ Edit</button>
           </div>
           <div className="system-specs-summary">
-            {systemSpecs ? systemSpecs : <em>No specs yet</em>}
+            {systemSpecs ? systemSpecs : <em>No details yet</em>}
           </div>
         </div>
       )}
