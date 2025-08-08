@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import '../styles/SessionManager.css';
 import { v4 as uuidv4 } from "uuid";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 //Handles session restoration based on entered session ID
 const SessionManager = ({ onSessionReady }) => {
   const [inputHash, setInputHash] = useState("");

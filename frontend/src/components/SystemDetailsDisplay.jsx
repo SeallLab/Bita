@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/SystemDetailsDisplay.css';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export default function SystemDetailsDisplay({ systemDetails, setSystemDetails }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftDetails, setDraftDetails] = useState(systemDetails || "");
