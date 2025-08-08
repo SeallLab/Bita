@@ -19,13 +19,13 @@ function SuggestionButton({ label, description, onClick, active }) {
 }
 
 //Handles the suggestion buttons, and the specific prompts that are sent for each button
-export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages, loadingStatus}) {
+export default function SuggestionTabs({ systemDetails, sessionId, updateMessages, loadingStatus}) {
   const [activeTab, setActiveTab] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = async (type) => {
-    if (!systemSpecs) {
-      alert("Please enter your system specs first.");
+    if (!systemDetails) {
+      alert("Please enter your system details first.");
       return;
     }
 
@@ -39,7 +39,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
     switch (type) {
       case 1:
         userMessage = "According to my system details, what are some biases that you see could be possible?";
-        systemMessage = `Given this system context: "${systemSpecs}", what are the possible fairness or bias issues to watch for? Follow this format, listing 5-10 possible bugs:
+        systemMessage = `Given this system context: "${systemDetails}", what are the possible fairness or bias issues to watch for? Follow this format, listing 5-10 possible bugs:
         
           (Paragraph about components that could cause bias)
           Here are some bugs that could occur from ___ bias:
@@ -50,7 +50,7 @@ export default function SuggestionTabs({ systemSpecs, sessionId, updateMessages,
         break;
       case 3:
         userMessage = "Can you generate some exploratory testing charters?";
-        systemMessage = `Based on this system and its context: "${systemSpecs}", can you generate 3-5 exploratory testing charters I can use? Use this formatting:
+        systemMessage = `Based on this system and its context: "${systemDetails}", can you generate 3-5 exploratory testing charters I can use? Use this formatting:
           **Charter ___:**
           ***Goal:*** Description of what to test.
           ***Time:*** How long keep testing
