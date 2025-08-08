@@ -1,13 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/SystemSpecsDisplay.css';
 
-export default function SystemSpecsDisplay({ systemSpecs, setSystemSpecs, saveSystemSpecs }) {
+const BACKEND_URL = "http://localhost:5000";
+
+export default function SystemSpecsDisplay({ systemSpecs, setSystemSpecs }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftSpecs, setDraftSpecs] = useState(systemSpecs || "");
 
   useEffect(() => {
-      setDraftSpecs(systemSpecs || "");
-    }, [systemSpecs]);
+    setDraftSpecs(systemSpecs || "");
+  }, [systemSpecs]);
+
+  const saveSystemSpecs = async (specs) => {
+    const sessionId = localStorage.getItem("session_id");
+    if (!sessionId) {
+      console.error("No session ID found for saving system specs.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/system_details`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          system_details: specs,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to save system details");
+      }
+    } catch (err) {
+      console.error("Error saving system details:", err);
+    }
+  };
 
   const handleSave = () => {
     setSystemSpecs(draftSpecs);
@@ -17,25 +44,23 @@ export default function SystemSpecsDisplay({ systemSpecs, setSystemSpecs, saveSy
 
   return (
     <>
-      {/* Small summary box in corner */}
       {!isEditing && (
         <div className="system-specs-floating-box">
           <div className="system-specs-header">
-            <span className="specs-title">System Specs</span>
+            <span className="specs-title">System Details</span>
             <button className="edit-btn" onClick={() => setIsEditing(true)}>✏️ Edit</button>
           </div>
           <div className="system-specs-summary">
-            {systemSpecs ? systemSpecs : <em>No specs yet</em>}
+            {systemSpecs ? systemSpecs : <em>No details yet</em>}
           </div>
         </div>
       )}
 
-      {/*Modal when editing*/}
       {isEditing && (
         <div className="system-specs-modal-overlay">
           <div className="system-specs-modal">
             <div className="system-specs-header">
-              <h3>Edit System Specs</h3>
+              <h3>Edit System Details</h3>
               <button className="close-btn" onClick={() => setIsEditing(false)}>✖</button>
             </div>
 

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from "react-markdown";
 import './App.css';
 import BitaLogo from "./images/Bita.svg";
-import { v4 as uuidv4 } from 'uuid';
 import SuggestionTabs from './components/SuggestionsTabs';
 import SystemSpecsDisplay from './components/SystemSpecsDisplay';
 import SessionManager from './components/SessionManager';
@@ -13,51 +12,11 @@ const BACKEND_URL = "http://localhost:5000";
 function App() {
   const [sessionId, setSessionId] = useState("");
   const [confirmed, setConfirmed] = useState(false);
-  const [inputHash, setInputHash] = useState("");
-  const [error, setError] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [systemSpecs, setSystemSpecs] = useState("");
   const [runTour, setRunTour] = useState(false);
-
-  useEffect(() => {
-    if (confirmed && sessionId) {
-      localStorage.setItem("session_id", sessionId);
-      fetchChat(sessionId).then((loaded) => {
-        if (loaded?.length === 0) {
-          //No messages yet, show intro
-          const introMessage = {
-            sender: "bot",
-            message: "Hi there! I'm Bita. You can ask me about system testing, bias detection, or anything related to your project setup. How can I help today?"
-          };
-          setMessages([introMessage]);
-        }
-      });
-    }
-  }, [confirmed, sessionId]);
-
-  const fetchChat = async (id) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/chat/${id}`);
-      if (!res.ok) {
-        const errorData = await res.json();
-        setError(errorData.error || "An unknown error occurred.");
-        setMessages([]);
-        setSystemSpecs("");
-        return [];
-      }
-
-      const data = await res.json();
-      setMessages(data.messages);
-      setSystemSpecs(data.system_details);
-      setError(null);
-      return data.messages;
-    } catch (err) {
-      setError("Unable to connect to the server.");
-      return [];
-    }
-  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -82,60 +41,16 @@ function App() {
     }
   };
 
-  const tryLoadSession = async () => {
-    const hash = inputHash.trim();
-    if (!hash) return;
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/chat/${hash}`);
-      if (!res.ok) {
-        const err = await res.json();
-        setError(err.error || "Invalid session.");
-        return;
-      }
-
-      const data = await res.json();
-      setSessionId(hash);
-      setMessages(data.messages);
-      setSystemSpecs(data.system_details);
-      setConfirmed(true);
-      setError(null);
-    } catch (err) {
-      setError("Failed to connect to the server.");
-    }
-  };
-
-  const saveSystemSpecs = async (specs) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/system_details`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id: sessionId,
-          system_details: specs,
-        })
-      });
-
-      if (!res.ok) {
-        console.error("Failed to save system details");
-      }
-    } catch (err) {
-      console.error("Error saving system details:", err);
-    }
-  };
-
   if (!confirmed) {
     return (
       <SessionManager
-        inputHash={inputHash}
-        setInputHash={setInputHash}
-        tryLoadSession={tryLoadSession}
-        startNewSession={() => {
-          setSessionId(uuidv4());
+        onSessionReady={({ sessionId, systemSpecs, messages }) => {
+          setSessionId(sessionId);
+          setSystemSpecs(systemSpecs);
+          setMessages(messages);
           setConfirmed(true);
-          setError(null);
+          localStorage.setItem("session_id", sessionId);
         }}
-        error={error}
       />
     );
   }
@@ -220,7 +135,6 @@ function App() {
         <SystemSpecsDisplay
             systemSpecs={systemSpecs}
             setSystemSpecs={setSystemSpecs}
-            saveSystemSpecs={saveSystemSpecs}
           />
       </div>
     </div>

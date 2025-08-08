@@ -1,29 +1,86 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import '../styles/SessionManager.css';
+import { v4 as uuidv4 } from "uuid";
 
-const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSession, error }) => {
-  const [storedSessionIds, setStoredSessionIds] = React.useState(() => {
+const BACKEND_URL = "http://localhost:5000"; // move this here
+
+const SessionManager = ({ onSessionReady }) => {
+  const [inputHash, setInputHash] = useState("");
+  const [storedSessionIds, setStoredSessionIds] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
     const saved = localStorage.getItem("bita-session-ids");
-    return saved ? JSON.parse(saved) : [];
-  });
+    const parsed = saved ? JSON.parse(saved) : [];
+
+    setStoredSessionIds(parsed);
+
+    if (parsed.length > 0 && (!inputHash || inputHash.trim() === "")) {
+      setInputHash(parsed[parsed.length - 1]);
+    }
+  }, []);
 
   const handleLoadSession = async () => {
-    await tryLoadSession();
+    const hash = inputHash.trim();
+    if (!hash) return;
 
-    if (error || !inputHash) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/chat/${hash}`);
 
-    const trimmed = inputHash.trim();
-    if (trimmed && !storedSessionIds.includes(trimmed)) {
-      const updated = [...storedSessionIds, trimmed];
-      localStorage.setItem("bita-session-ids", JSON.stringify(updated));
-      setStoredSessionIds(updated);
+      if (res.status === 404) {
+        //Session not found, silently ignore error
+        setError("No Session Found");
+        return; 
+      }
+
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error || "Invalid session.");
+        return;
+      }
+
+      const data = await res.json();
+      const trimmed = hash;
+
+      if (!storedSessionIds.includes(trimmed)) {
+        const updated = [...storedSessionIds, trimmed];
+        localStorage.setItem("bita-session-ids", JSON.stringify(updated));
+        setStoredSessionIds(updated);
+      }
+
+      onSessionReady({
+        sessionId: trimmed,
+        systemSpecs: data.system_details,
+        messages: data.messages
+      });
+
+      setError(null);
+    } catch (err) {
+      setError("Failed to connect to the server.");
     }
+  };
+
+  const handleStartNewSession = () => {
+    const newId = uuidv4();
+    onSessionReady({
+      sessionId: newId,
+      systemSpecs: "",
+      messages: [{
+        sender: "bot",
+        message: "Hi there! I'm Bita. You can ask me about fairness testing and bias detection. How can I help today?"
+      }]
+    });
+
+    const updated = [...storedSessionIds, newId];
+    localStorage.setItem("bita-session-ids", JSON.stringify(updated));
+    setStoredSessionIds(updated);
+    setInputHash(newId);
+    setError(null);
   };
 
   return (
     <div className="app-container">
       <div className="session-manager-inner">
-
         {/* Intro Box */}
         <div className="intro-box">
           <h2 style={{ marginTop: 0 }}>Hi! I'm Bita 👋</h2>
@@ -65,10 +122,22 @@ const SessionManager = ({ inputHash, setInputHash, tryLoadSession, startNewSessi
         <div style={{ textAlign: "center", margin: "10px 0", color: "#888" }}>OR</div>
 
         <button
-          onClick={startNewSession}
+          onClick={handleStartNewSession}
           className="send-button"
         >
           Start New Session
+        </button>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("bita-session-ids");
+            setStoredSessionIds([]);
+            setInputHash("");
+            setError("Stored Sessions Cleared");
+          }}
+          className="clear-button"
+        >
+          Clear Saved Sessions
         </button>
 
         {error && (
