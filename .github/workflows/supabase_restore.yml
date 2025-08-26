@@ -13,6 +13,6 @@ jobs:
       - name: Ping Supabase
         run: |
           echo "Pinging Supabase..."
-          curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URI" | tee response.txt
+          curl -s -o /dev/null -w "%{http_code}\n" "$SUPABASE_URL/auth/v1/health"
         env:
           SUPABASE_URI: ${{ secrets.SUPABASE_URI }}
