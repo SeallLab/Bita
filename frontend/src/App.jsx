@@ -6,6 +6,7 @@ import SuggestionTabs from './components/SuggestionsTabs';
 import SystemDetailsDisplay from './components/SystemDetailsDisplay';
 import SessionManager from './components/SessionManager';
 import BitaTour from './components/BitaTour';
+import AboutUsModal from './components/AboutUsModal';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -17,6 +18,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [systemDetails, setSystemDetails] = useState("");
   const [runTour, setRunTour] = useState(false);
+  const [openAboutUs, setOpenAboutUs] = useState(false);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -58,6 +60,7 @@ function App() {
   return (
     <div className="app-container">
       <BitaTour run={runTour} setRun={setRunTour} />
+      <AboutUsModal isOpen={openAboutUs} onClose={() => setOpenAboutUs(false)} />
 
       <div className="app-inner">
         {/* Header */}
@@ -77,6 +80,21 @@ function App() {
             }}
           >
             How to Use Bita
+          </button>
+
+          <button
+          onClick={() => setOpenAboutUs(true)}
+          style={{
+            marginLeft: "12px",
+            backgroundColor: "#5f3c7f",
+            color: "white",
+            border: "none",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            cursor: "pointer"
+            }}
+          >
+            About Us
           </button>
         </div>
 
