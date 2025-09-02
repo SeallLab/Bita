@@ -1,6 +1,6 @@
 import React from "react";
 import seallLogo from '../images/seall.avif';
-import ronniePhoto from '../images/SouzaSantos.avif';
+import ronniePhoto from '../images/SouzaSantos.jpg';
 import keerynPhoto from '../images/KeerynJohnson.jpg';
 import '../styles/AboutUsModal.css';
 
@@ -10,11 +10,11 @@ export default function AboutUsModal({ isOpen, onClose }) {
   return (
     <div
       className="info-modal-overlay"
-      onClick={onClose} // close if user clicks outside
+      onClick={onClose} //close if user clicks outside
     >
       <div
         className="info-modal"
-        onClick={(e) => e.stopPropagation()} // prevent close on modal click
+        onClick={(e) => e.stopPropagation()} //prevent close on modal click
       >
         <h2>About Us</h2>
 
@@ -35,6 +35,17 @@ export default function AboutUsModal({ isOpen, onClose }) {
         </div>
 
         <div className="about-section">
+          <img src={keerynPhoto} alt="Keeryn Johnson Portrait" />
+          <div>
+            <h4>Keeryn Johnson (Undergraduate Research Assistant)</h4>
+            <p>
+              Keeryn Johnson is currently studying at the University of Calgary for a Software Engineering Degree with a minor in Mechatronics. 
+              He has an interest in Robotics and Software Design, and hopes to work in the robotics industry in the future.
+            </p>
+          </div>
+        </div>
+
+        <div className="about-section">
           <img src={ronniePhoto} alt="Dr. Ronnie De Souza Santos Portrait" />
           <div>
             <h4>Dr. Ronnie de Souza Santos, Ph.D.</h4>
@@ -45,18 +56,6 @@ export default function AboutUsModal({ isOpen, onClose }) {
             </p>
           </div>
         </div>
-
-        <div className="about-section">
-          <img src={keerynPhoto} alt="Keeryn Johnson Portrait" />
-          <div>
-            <h4>Keeryn Johnson (Developer of Bita)</h4>
-            <p>
-              Keeryn Johnson is currently studying at the University of Calgary for a Software Engineering Degree with a minor in Mechatronics. 
-              He has an interest in Robotics and Software Design, and hopes to work in the robotics industry in the future.
-            </p>
-          </div>
-        </div>
-
         <div className="info-modal-actions">
           <button className="close-button" onClick={onClose}>
             Close
