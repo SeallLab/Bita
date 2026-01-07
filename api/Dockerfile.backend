@@ -7,10 +7,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libffi-dev \
-    libomp-dev \
-    swig \
     curl \
     git \
  && rm -rf /var/lib/apt/lists/*
@@ -19,10 +15,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir torch==2.1.2+cpu -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+#Copy only runtime files
+COPY query_papers.py app.py ./
 
-# Internal port only
 EXPOSE 5000
 
-# Start Gunicorn bound to localhost
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--max-requests", "100", "--timeout", "30", "app:app"]

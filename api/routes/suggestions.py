@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
-from vector_search import query_papers
+from paper_query import query_papers
 from llm_query import send_suggestion_query
 from routes.chat import store_message
 

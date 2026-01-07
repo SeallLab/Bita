@@ -40,6 +40,3 @@ app.register_blueprint(suggestions)
 @app.route("/", methods=["GET"])
 def default_api():
     return jsonify({"message": "API is working!"})
-
-if __name__ == '__main__':
-    serve(app, host="0.0.0.0", port=5000, threads=6, debug=True, timeout=120)
