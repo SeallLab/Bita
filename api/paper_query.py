@@ -1,7 +1,6 @@
 import os
 from sentence_transformers import SentenceTransformer
 from supabase import create_client
-from langchain.schema import Document
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,5 +33,5 @@ def query_papers(query, top_k=5):
 
     results = []
     for row in response.data:
-        results.append(Document(page_content=row['text'], metadata={"similarity": row["similarity"]}))
+        results.append({"text": row['text'], "similarity": row["similarity"]})
     return results

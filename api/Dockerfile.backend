@@ -16,7 +16,8 @@ RUN pip install --no-cache-dir torch==2.1.2+cpu -f https://download.pytorch.org/
 RUN pip install --no-cache-dir -r requirements.txt
 
 #Copy only runtime files
-COPY query_papers.py app.py ./
+COPY paper_query.py llm_query.py app.py ./
+COPY routes ./routes
 
 EXPOSE 5000
 

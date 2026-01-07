@@ -2,7 +2,6 @@ import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
-from waitress import serve
 from routes.chat import chatting
 from routes.suggestions import suggestions
 
