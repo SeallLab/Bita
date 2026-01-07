@@ -3,7 +3,6 @@ flask-cors
 requests
 python-dotenv
 flask-session
-datetime
 supabase
 pyjwt
 gunicorn
@@ -11,3 +10,4 @@ openai>=1.0
 google-generativeai>=0.3.2
 sentence-transformers==2.2.2
 cryptography
+onnxruntime

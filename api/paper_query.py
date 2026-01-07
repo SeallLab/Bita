@@ -13,12 +13,24 @@ if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
 
 supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
+# Point HuggingFace and transformers caches to a temp location
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/transformers_cache"
+os.environ["HF_HOME"] = "/tmp/huggingface_cache"
+
 # Cache the model
 _model = None
 def get_model():
     global _model
     if _model is None:
-        _model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+        _model_path = "/models/all-MiniLM-L6-v2"
+        if not os.path.exists(_model_path):
+            _model_path = "all-MiniLM-L6-v2"
+
+        _model = SentenceTransformer(
+            _model_path,
+            device="cpu",
+            backend="onnx"
+        )
     return _model
 
 # Query Supabase using vector embeddings
