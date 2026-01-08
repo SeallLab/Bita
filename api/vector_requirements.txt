@@ -1,9 +1,0 @@
-nltk
-sentence-transformers
-langchain
-langchain-community
-unstructured
-spacy
-supabase
-python-dotenv
-torch==2.1.2+cpu

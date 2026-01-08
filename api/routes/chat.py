@@ -5,8 +5,8 @@ from cryptography.fernet import Fernet
 import uuid
 from dotenv import load_dotenv
 from flask import Blueprint, jsonify, request
-from llm_query import send_document_query
-from paper_query import query_papers
+from api.llm.llm_query import send_document_query
+from api.rag.paper_query import query_papers
 from database_connector import get_db_connection
 
 #Register route with Flask app
