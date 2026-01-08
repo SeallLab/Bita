@@ -18,10 +18,14 @@ RUN pip install --no-cache-dir \
 
 #Copy only runtime files
 COPY app.py ./
-COPY rag/paper_query.py ./rag
 COPY routes ./routes
 COPY models ./models
 COPY llm ./llm
+
+#Only copy paper_query from rag
+RUN mkdir -p rag
+COPY rag/paper_query.py ./rag/
+RUN touch ./rag/__init__.py
 
 EXPOSE 5000
 
