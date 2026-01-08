@@ -13,7 +13,7 @@ client = OpenAI(api_key=GPT_API_KEY)
 
 #Send prompt with chat history, documents, and user message
 def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> str:
-    context = "\n\n".join([doc.page_content for doc in context_docs])
+    context = "\n\n".join([doc["text"] for doc in context_docs])
 
     prompt = f"""You are a helpful, enthusiastic research assistant who explains fairness testing in simple, practical terms while being kind and supportive.
 
