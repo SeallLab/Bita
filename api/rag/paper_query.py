@@ -22,7 +22,8 @@ _model = None
 def get_model():
     global _model
     if _model is None:
-        _model = SentenceTransformer("/models/all-MiniLM-L6-v2", device="cpu")
+        _model_path = "models/all-MiniLM-L6-v2"
+        _model = SentenceTransformer(_model_path, device="cpu")
     return _model
 
 # Query Supabase using vector embeddings
