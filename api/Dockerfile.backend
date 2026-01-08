@@ -12,14 +12,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-COPY models /models
 RUN pip install --no-cache-dir \
-    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
     -r requirements.txt
 
 #Copy only runtime files
-COPY paper_query.py llm_query.py app.py ./
+COPY app.py ./
+COPY rag/paper_query.py ./rag
 COPY routes ./routes
+COPY models ./models
+COPY llm ./llm
 
 EXPOSE 5000
 

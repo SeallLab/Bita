@@ -1,7 +1,7 @@
 import os
 import re
 import nltk
-from api.rag.paper_query import get_model
+from rag.paper_query import get_model
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import SpacyTextSplitter
 from supabase import create_client
