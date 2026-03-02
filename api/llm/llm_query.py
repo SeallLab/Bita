@@ -62,7 +62,7 @@ def send_document_query(user_query: str, context_docs: list, chat_logs: str) -> 
 
 #Adjusted LLM query for suggestion buttons
 def send_suggestion_query(message: str, context_docs: list):
-    context = "\n\n".join([doc.page_content for doc in context_docs])
+    context = "\n\n".join([doc["text"] for doc in context_docs])
     
     prompt = f"""
     {message}

@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+from pymongo.server_api import ServerApi
 
 load_dotenv()
 
@@ -19,7 +20,7 @@ class MongoSingleton:
                 if not mongo_uri:
                     raise ValueError("MONGO_URI is missing from environment variables.")
 
-                cls._client = MongoClient(mongo_uri)
+                cls._client = MongoClient(mongo_uri, server_api=ServerApi('1'))
 
                 db_name = os.getenv("MONGO_DB_NAME", "bita-cluster")
                 cls._db = cls._client[db_name]
