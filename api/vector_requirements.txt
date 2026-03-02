@@ -3,8 +3,8 @@ nltk==3.8.1
 regex==2025.9.1
 
 # LangChain & community extensions
-langchain==0.1.2
-langchain-community==0.0.33
+langchain==1.2.8
+langchain-community==0.4.1
 
 # PDF parsing
 unstructured==0.10.0
