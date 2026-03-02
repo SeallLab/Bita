@@ -2,7 +2,7 @@
 numpy==1.26.2
 nltk==3.8.1
 regex==2025.9.1
-requests==2.31.0
+requests==2.32.5
 
 # LangChain & community extensions
 langchain==1.2.8
