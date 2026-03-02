@@ -1,0 +1,24 @@
+# Core libraries
+nltk==3.8.1
+regex==2025.9.1
+
+# LangChain & community extensions
+langchain==0.1.2
+langchain-community==0.0.33
+
+# PDF parsing
+unstructured==0.10.0
+python-magic==0.4.27
+pdfminer.six==20221105
+
+# Spacy for text splitting
+spacy==3.6.1
+
+# Transformer-based model embeddings
+transformers==4.33.2
+sentence-transformers==2.2.2
+torch==2.1.0
+
+# Utilities
+tqdm==4.66.1
+python-dotenv==1.0.0

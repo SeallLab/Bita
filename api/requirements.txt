@@ -3,12 +3,13 @@ flask-cors
 requests
 python-dotenv
 flask-session
-supabase
+pymongo
 pyjwt
 gunicorn
 openai>=1.0
 google-generativeai>=0.3.2
-sentence-transformers==2.2.2
+sentence-transformers==2.6.1
 cryptography
 onnxruntime
 huggingface_hub==0.16.4
+faiss-cpu

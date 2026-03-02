@@ -5,16 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'papers/**/*.pdf'
+      - 'api/papers/**/*.pdf'
   workflow_dispatch:
 
 jobs:
   embed:
     runs-on: ubuntu-latest
-
-    env:
-      SUPABASE_URI: ${{ secrets.SUPABASE_URI }}
-      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
     steps:
     - name: Checkout code
@@ -33,4 +29,4 @@ jobs:
         python -m spacy download en_core_web_sm
 
     - name: Run embedding script
-      run: python api/vector_search.py
+      run: python api/rag/embed_papers.py

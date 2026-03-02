@@ -1,64 +1,52 @@
 import os
 import re
 import nltk
-from rag.paper_query import get_model
+import pickle
+import numpy as np
+import faiss
+from sentence_transformers import SentenceTransformer
 from langchain_community.document_loaders import UnstructuredPDFLoader
 from langchain.text_splitter import SpacyTextSplitter
-from supabase import create_client
-from dotenv import load_dotenv
 
 nltk.download('punkt')
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger_eng')
 
-load_dotenv()
+MODEL_PATH = "models/all-MiniLM-L6-v2"
+model = SentenceTransformer(MODEL_PATH, device="cpu")
 
-SUPABASE_URL = os.getenv("SUPABASE_URI")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+PDF_FOLDER = "papers"
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-
-#Clean unwanted text from research papers
 def clean_text(text):
-    text = re.sub(r"Authorized licensed use.*?Restrictions apply\.", "", text, flags=re.DOTALL) #Remove license watermark
-    text = re.sub(r"\[\d+\]\s?.*?(\n|$)", "", text) #Remove inline references
-    text = re.sub(r"\s+", " ", text) #Normalize whitespace
+    text = re.sub(r"Authorized licensed use.*?Restrictions apply\.", "", text, flags=re.DOTALL)
+    text = re.sub(r"\[\d+\]\s?.*?(\n|$)", "", text)
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
-#Load PDFs, split them into chunks, and clean each chunk
-def get_chunks_for_embedding(pdf_folder="papers", chunk_size=1500, chunk_overlap=150):
+def get_chunks(pdf_folder):
     docs = []
-    #Load each PDF in the folder
     for filename in os.listdir(pdf_folder):
         if filename.endswith(".pdf"):
             loader = UnstructuredPDFLoader(os.path.join(pdf_folder, filename), strategy="fast")
             docs.extend(loader.load())
-
-    #Use SpacyTextSplitter to split documents into overlapping chunks
-    splitter = SpacyTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    splitter = SpacyTextSplitter(chunk_size=600, chunk_overlap=150)
     chunks = splitter.split_documents(docs)
+    texts = [clean_text(c.page_content) for c in chunks]
+    return texts
 
-    #Clean each chunk's content
-    cleaned_chunks = [clean_text(chunk.page_content) for chunk in chunks]
-    metadata = [chunk.metadata for chunk in chunks]
+#Build FAISS index
+texts = get_chunks(PDF_FOLDER)
+embeddings = np.array(model.encode(texts)).astype("float32")
+dim = embeddings.shape[1]
 
-    return cleaned_chunks, metadata
+index = faiss.IndexFlatL2(dim)
+index.add(embeddings)
 
-#Upload chunks and their vector embeddings to Supabase
-def upload_chunks_to_supabase(texts, metadata):
-    model = get_model()
-    for i, text in enumerate(texts):
-        embedding = model.encode(text).tolist()
-        supabase.table("paper_chunks").insert({
-            "text": text,
-            "embedding": embedding
-        }).execute()
+#Save index and texts
+faiss.write_index(index, os.path.join(DATA_DIR, "faiss_index.bin"))
+with open(os.path.join(DATA_DIR, "texts.pkl"), "wb") as f:
+    pickle.dump(texts, f)
 
-#Build the vector index by processing PDFs and uploading them
-def build_supabase_index(pdf_folder="papers"):
-    texts, metadata = get_chunks_for_embedding(pdf_folder)
-    upload_chunks_to_supabase(texts, metadata)
-
-#Run indexing pipeline when new papers pushed to GitHub
-if __name__ == "__main__":
-    build_supabase_index(pdf_folder="papers")
+print(f"Index built with {len(texts)} chunks.")

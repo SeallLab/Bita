@@ -1,32 +1,35 @@
 import os
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 
-#Load environment variables
 load_dotenv()
 
-#Single instance of database connection
-class SupabaseSingleton:
-    _instance: Client = None
+class MongoSingleton:
+    _client: MongoClient = None
+    _db = None
 
     @classmethod
-    def get_instance(cls) -> Client:
-        """Returns a singleton instance of the Supabase client."""
-        if cls._instance is None:
+    def get_instance(cls):
+        """Returns a singleton MongoDB database instance."""
+        if cls._client is None:
             try:
-                supabase_url = os.getenv("SUPABASE_URI")
-                supabase_service_key = os.getenv("SUPABASE_SERVICE_KEY")
+                mongo_uri = os.getenv("MONGO_URI")
 
-                if not supabase_url or not supabase_service_key:
-                    raise ValueError("Supabase URL or Service Key is missing.")
+                if not mongo_uri:
+                    raise ValueError("MONGO_URI is missing from environment variables.")
 
-                cls._instance = create_client(supabase_url, supabase_service_key)
-            except Exception as e:
-                print(f"Supabase connection error: {e}")
-                cls._instance = None
-        return cls._instance
+                cls._client = MongoClient(mongo_uri)
 
-#Fetch instance of database connection
-def get_db_connection() -> Client:
-    """Returns the singleton instance of the Supabase client."""
-    return SupabaseSingleton.get_instance()
+                db_name = os.getenv("MONGO_DB_NAME", "bita-cluster")
+                cls._db = cls._client[db_name]
+
+            except ConnectionFailure as e:
+                print(f"MongoDB connection failed: {e}")
+                cls._client = None
+                cls._db = None
+
+        return cls._db
+
+def get_db_connection():
+    return MongoSingleton.get_instance()

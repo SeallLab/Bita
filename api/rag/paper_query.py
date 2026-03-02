@@ -1,42 +1,33 @@
 import os
+import pickle
+import numpy as np
 from sentence_transformers import SentenceTransformer
-from supabase import create_client
-from dotenv import load_dotenv
+import faiss
 
-load_dotenv()
+DATA_DIR = "data"
 
-SUPABASE_URL = os.getenv("SUPABASE_URI")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+model = SentenceTransformer("models/all-MiniLM-L6-v2", device="cpu")
 
-if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
-    raise ValueError("Missing SUPABASE_URI or SUPABASE_SERVICE_KEY in .env")
+#Load FAISS index and texts once at startup
+try:
+    index = faiss.read_index(f"{DATA_DIR}/faiss_index.bin")
+    with open(f"{DATA_DIR}/texts.pkl", "rb") as f:
+        stored_texts = pickle.load(f)
+except FileNotFoundError:
+    print("FAISS index or texts.pkl not found in data folder")
+    raise
 
-supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-
-# Point HuggingFace and transformers caches to a temp location
-os.environ["TRANSFORMERS_CACHE"] = "/tmp/transformers_cache"
-os.environ["HF_HOME"] = "/tmp/huggingface_cache"
-
-# Cache the model
-_model = None
-def get_model():
-    global _model
-    if _model is None:
-        _model_path = "models/all-MiniLM-L6-v2"
-        _model = SentenceTransformer(_model_path, device="cpu")
-    return _model
-
-# Query Supabase using vector embeddings
 def query_papers(query, top_k=5):
-    model = get_model()
-    query_embedding = model.encode(query).tolist()
+    query_embedding = np.array(model.encode([query])).astype("float32")
+    query_embedding = query_embedding / np.linalg.norm(query_embedding, axis=1, keepdims=True)
 
-    response = supabase.rpc("match_paper_chunks", {
-        "query_embedding": query_embedding,
-        "match_count": top_k
-    }).execute()
+    distances, indices = index.search(query_embedding, top_k)
 
     results = []
-    for row in response.data:
-        results.append({"text": row['text'], "similarity": row["similarity"]})
+    for i, dist in zip(indices[0], distances[0]):
+        results.append({
+            "text": stored_texts[i],
+            "similarity": float(dist)
+        })
+
     return results
