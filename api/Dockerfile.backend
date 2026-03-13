@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir \
     -r requirements.txt
 
 #Copy only runtime files
-COPY app.py ./
+COPY app.py database_connector.py ./
 COPY routes ./routes
 COPY models ./models
 COPY llm ./llm
