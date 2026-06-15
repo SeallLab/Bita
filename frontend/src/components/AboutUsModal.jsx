@@ -1,5 +1,5 @@
 import React from "react";
-import seallLogo from '../images/seall.avif';
+import pluriseLogo from '../images/plurise.png';
 import ronniePhoto from '../images/SouzaSantos.jpg';
 import keerynPhoto from '../images/KeerynJohnson.jpg';
 import '../styles/AboutUsModal.css';
@@ -19,11 +19,11 @@ export default function AboutUsModal({ isOpen, onClose }) {
         <h2>About Us</h2>
 
         <div className="about-section">
-          <img src={seallLogo} alt="SEALL Logo" />
+          <img src={pluriseLogo} alt="Plurise Logo" />
           <div>
-            <h4>SE-ALL (Software Engineering for All Lab)</h4>
+            <h4>Plurise Lab</h4>
             <p>
-              The SE-ALL (Software Engineering for All Lab) focuses 
+              The Plurise Lab focuses 
               on the human aspects of software engineering, including development practices, 
               project management, software testing, fairness, and EDI. Understanding behaviors, 
               cognitive skills, teamwork, and diverse user perspectives is vital for creating 
