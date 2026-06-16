@@ -23,7 +23,7 @@ export default function AboutUsModal({ isOpen, onClose }) {
           <div>
             <h4>Plurise Lab</h4>
             <p>
-              The Plurise Lab focuses 
+              Plurise Lab focuses 
               on the human aspects of software engineering, including development practices, 
               project management, software testing, fairness, and EDI. Understanding behaviors, 
               cognitive skills, teamwork, and diverse user perspectives is vital for creating 
